@@ -93,3 +93,26 @@ print(stats["count"], stats["duplicate_count"])
 unique_docs = deduplicate_documents(docs)
 print(format_documents(unique_docs, output_format="markdown"))
 ```
+
+## Contributing
+
+Contributions are welcome! We appreciate bug fixes, feature additions, documentation improvements,
+and more. Please check the [contributing guidelines](CONTRIBUTING.md) for details on:
+
+- Setting up the development environment
+- Code style and testing requirements
+- Submitting pull requests
+
+Whether you're fixing a bug or proposing a new feature, please open an issue first to discuss
+your changes.
+
+## API Stability
+
+:warning: **Important**: As `docculus` is under active development, its API is not yet stable and may
+change between releases. We recommend pinning a specific version in your project’s dependencies to
+ensure consistent behavior.
+
+## License
+
+`docculus` is licensed under BSD 3-Clause "New" or "Revised" license available in [LICENSE](LICENSE)
+file.
