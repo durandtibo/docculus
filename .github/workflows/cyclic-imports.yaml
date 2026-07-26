@@ -40,6 +40,7 @@ jobs:
       - name: check docculus.store
         run: |
           python -c "from docculus import store"
+          python -c "from docculus.store import factory"
 
       - name: check docculus.transform
         run: |
@@ -49,3 +50,7 @@ jobs:
         run: |
           python -c "from docculus import utils"
           python -c "from docculus.utils import imports"
+
+      - name: check docculus.validation
+        run: |
+          python -c "from docculus import validation"
