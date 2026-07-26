@@ -6,8 +6,9 @@ import pytest
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from docculus.documents.analysis import print_metadata_stats_report
-from docculus.documents.analysis.metadata_print import (
+
+from docculus.analysis import print_metadata_stats_report
+from docculus.analysis.metadata_print import (
     _build_key_flags,
     _build_key_sample,
     _build_overview_line,

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from langchain_core.documents import Document
-from docculus.documents.analysis import find_empty_document_ids, find_empty_documents
+
+from docculus.analysis import find_empty_document_ids, find_empty_documents
 
 
 def test_find_empty_documents_no_empty() -> None:

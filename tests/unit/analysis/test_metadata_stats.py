@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import pytest
 from langchain_core.documents import Document
-from docculus.documents.analysis import (
+
+from docculus.analysis import (
     MetadataStats,
     compute_metadata_stats,
 )

@@ -6,7 +6,7 @@ __all__ = ["find_empty_document_ids", "find_empty_documents"]
 
 from typing import TYPE_CHECKING, Any
 
-from docculus.documents.empty import is_document_empty
+from docculus.document import is_empty
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,7 +40,7 @@ def find_empty_documents(
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.documents.analysis import find_empty_documents
+        >>> from docculus.analysis import find_empty_documents
         >>> docs = [
         ...     Document(id="a", page_content="hello"),
         ...     Document(id="b", page_content=""),
@@ -53,7 +53,7 @@ def find_empty_documents(
     return [
         document
         for document in documents
-        if is_document_empty(document, treat_whitespace_as_empty=treat_whitespace_as_empty)
+        if is_empty(document, treat_whitespace_as_empty=treat_whitespace_as_empty)
     ]
 
 
@@ -84,7 +84,7 @@ def find_empty_document_ids(
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.documents.analysis import find_empty_document_ids
+        >>> from docculus.analysis import find_empty_document_ids
         >>> docs = [
         ...     Document(id="a", page_content="hello"),
         ...     Document(id="b", page_content=""),
@@ -97,5 +97,5 @@ def find_empty_document_ids(
     return [
         document.id
         for document in documents
-        if is_document_empty(document, treat_whitespace_as_empty=treat_whitespace_as_empty)
+        if is_empty(document, treat_whitespace_as_empty=treat_whitespace_as_empty)
     ]

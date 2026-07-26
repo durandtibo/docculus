@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from langchain_core.documents import Document
-from docculus.documents.analysis import find_duplicate_content_document_ids
+
+from docculus.analysis import find_duplicate_content_document_ids
 
 #########################################################
 #     Tests for find_duplicate_content_document_ids     #

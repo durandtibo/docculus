@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import pytest
+from coola.utils.bloom_filter import BloomFilter
 from langchain_core.documents import Document
-from docculus.documents.analysis import (
+
+from docculus.analysis import (
     ApproxContentStats,
     compute_content_stats_approx,
 )
-from docculus.utils.bloom_filter import BloomFilter
 
 
 @pytest.fixture

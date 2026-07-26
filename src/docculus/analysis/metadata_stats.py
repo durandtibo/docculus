@@ -240,7 +240,7 @@ def compute_metadata_stats(
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.documents.analysis import compute_metadata_stats
+        >>> from docculus.analysis import compute_metadata_stats
         >>> docs = [
         ...     Document(page_content="a", metadata={"source": "a.pdf"}),
         ...     Document(page_content="b", metadata={"source": "b.pdf", "page": 1}),

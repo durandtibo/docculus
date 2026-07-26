@@ -6,8 +6,9 @@ import pytest
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from docculus.documents.analysis import print_content_stats_report
-from docculus.documents.analysis.content_print import (
+
+from docculus.analysis import print_content_stats_report
+from docculus.analysis.content_print import (
     _build_approx_footnote_items,
     _build_doc_ids_grid,
     _build_overview_line,

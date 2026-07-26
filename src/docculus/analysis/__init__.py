@@ -16,22 +16,22 @@ __all__ = [
     "print_metadata_stats_report",
 ]
 
-from docculus.documents.analysis.content_approx import (
+from docculus.analysis.content_approx import (
     ApproxContentStats,
     compute_content_stats_approx,
 )
-from docculus.documents.analysis.content_exact import (
+from docculus.analysis.content_exact import (
     ExactContentStats,
     compute_content_stats_exact,
 )
-from docculus.documents.analysis.content_print import print_content_stats_report
-from docculus.documents.analysis.duplicate import find_duplicate_content_document_ids
-from docculus.documents.analysis.empty import (
+from docculus.analysis.content_print import print_content_stats_report
+from docculus.analysis.duplicate import find_duplicate_content_document_ids
+from docculus.analysis.empty import (
     find_empty_document_ids,
     find_empty_documents,
 )
-from docculus.documents.analysis.metadata_print import print_metadata_stats_report
-from docculus.documents.analysis.metadata_stats import (
+from docculus.analysis.metadata_print import print_metadata_stats_report
+from docculus.analysis.metadata_stats import (
     MetadataStats,
     compute_metadata_stats,
 )

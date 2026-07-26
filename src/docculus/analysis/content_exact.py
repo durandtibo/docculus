@@ -8,7 +8,7 @@ import hashlib
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from docculus.documents.length import get_document_length
+from docculus.document import get_length
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -126,7 +126,7 @@ class ExactContentStats:
         else:
             self._seen_hashes.add(content_hash)
 
-        length = get_document_length(doc)
+        length = get_length(doc)
         self.count += 1
         self.total_chars += length
         self._lengths.append(length)
@@ -261,7 +261,7 @@ def compute_content_stats_exact(documents: Iterable[Document]) -> dict[str, Any]
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.documents.analysis import compute_content_stats_exact
+        >>> from docculus.analysis import compute_content_stats_exact
         >>> docs = [
         ...     Document(id="a", page_content="hello"),
         ...     Document(id="b", page_content="hello world"),

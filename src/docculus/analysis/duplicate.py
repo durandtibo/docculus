@@ -38,7 +38,7 @@ def find_duplicate_content_document_ids(documents: Iterable[Document]) -> list[l
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.documents.analysis import find_duplicate_content_document_ids
+        >>> from docculus.analysis import find_duplicate_content_document_ids
         >>> docs = [
         ...     Document(id="a", page_content="hello"),
         ...     Document(id="b", page_content="hello"),
