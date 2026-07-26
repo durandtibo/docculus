@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from langchain_core.documents import Document
 
 from docculus.store.base import BaseDocumentStore
+from docculus.utils.imports import check_persista
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Generator, Iterator
@@ -46,6 +47,7 @@ class DocumentStore(BaseDocumentStore):
     """
 
     def __init__(self, store: BaseStore, metadata_mode: MetadataMode = "flat") -> None:
+        check_persista()
         if metadata_mode not in ("single", "flat"):
             msg = f"Incorrect metadata_mode: {metadata_mode!r}. Expected 'single' or 'flat'"
             raise ValueError(msg)
