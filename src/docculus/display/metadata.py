@@ -1,4 +1,5 @@
-r"""Contain utilities to print LangChain documents to the terminal."""
+r"""Contain utilities to print LangChain document metadata to the
+terminal."""
 
 from __future__ import annotations
 

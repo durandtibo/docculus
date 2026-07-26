@@ -5,8 +5,8 @@ from __future__ import annotations
 __all__ = [
     "check_persista",
     "is_persista_available",
-    "persista_available",
     "raise_persista_missing_error",
+    "require_persista",
 ]
 
 from functools import lru_cache
@@ -58,7 +58,7 @@ def is_persista_available() -> bool:
     return package_available("persista")
 
 
-def persista_available(fn: F) -> F:
+def require_persista(fn: F) -> F:
     r"""Implement a decorator to execute a function only if ``persista``
     package is installed.
 
@@ -71,8 +71,8 @@ def persista_available(fn: F) -> F:
 
     Example:
         ```pycon
-        >>> from docculus.utils.imports import persista_available
-        >>> @persista_available
+        >>> from docculus.utils.imports import require_persista
+        >>> @require_persista
         ... def my_function(n: int = 0) -> int:
         ...     return 42 + n
         ...

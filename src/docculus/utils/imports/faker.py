@@ -4,9 +4,9 @@ from __future__ import annotations
 
 __all__ = [
     "check_faker",
-    "faker_available",
     "is_faker_available",
     "raise_faker_missing_error",
+    "require_faker",
 ]
 
 from functools import lru_cache
@@ -58,7 +58,7 @@ def is_faker_available() -> bool:
     return package_available("faker")
 
 
-def faker_available(fn: F) -> F:
+def require_faker(fn: F) -> F:
     r"""Implement a decorator to execute a function only if ``faker``
     package is installed.
 
@@ -71,8 +71,8 @@ def faker_available(fn: F) -> F:
 
     Example:
         ```pycon
-        >>> from docculus.utils.imports import faker_available
-        >>> @faker_available
+        >>> from docculus.utils.imports import require_faker
+        >>> @require_faker
         ... def my_function(n: int = 0) -> int:
         ...     return 42 + n
         ...

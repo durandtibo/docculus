@@ -8,8 +8,8 @@ import pytest
 from docculus.utils.imports import (
     check_persista,
     is_persista_available,
-    persista_available,
     raise_persista_missing_error,
+    require_persista,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,32 +49,32 @@ def test_is_persista_available() -> None:
     assert isinstance(is_persista_available(), bool)
 
 
-def test_persista_available_with_package() -> None:
+def test_require_persista_with_package() -> None:
     with patch(f"{MODULE}.is_persista_available", lambda: True):
-        fn = persista_available(my_function)
+        fn = require_persista(my_function)
         assert fn(2) == 44
 
 
-def test_persista_available_without_package() -> None:
+def test_require_persista_without_package() -> None:
     with patch(f"{MODULE}.is_persista_available", lambda: False):
-        fn = persista_available(my_function)
+        fn = require_persista(my_function)
         assert fn(2) is None
 
 
-def test_persista_available_decorator_with_package() -> None:
+def test_require_persista_decorator_with_package() -> None:
     with patch(f"{MODULE}.is_persista_available", lambda: True):
 
-        @persista_available
+        @require_persista
         def fn(n: int = 0) -> int:
             return 42 + n
 
         assert fn(2) == 44
 
 
-def test_persista_available_decorator_without_package() -> None:
+def test_require_persista_decorator_without_package() -> None:
     with patch(f"{MODULE}.is_persista_available", lambda: False):
 
-        @persista_available
+        @require_persista
         def fn(n: int = 0) -> int:
             return 42 + n
 

@@ -1,4 +1,5 @@
-"""Provide utilities for concatenating documents."""
+"""Provide utilities for formatting documents into LLM-friendly
+strings."""
 
 from __future__ import annotations
 

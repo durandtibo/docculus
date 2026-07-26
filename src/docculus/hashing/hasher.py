@@ -12,7 +12,7 @@ from coola.hashing import (
 )
 from langchain_core.documents import Document
 
-from docculus.hashing.hashing import hash_document
+from docculus.hashing.functions import hash_document
 
 
 class DocumentHasher(BaseHasher[Document]):

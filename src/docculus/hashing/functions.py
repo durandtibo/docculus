@@ -1,4 +1,4 @@
-r"""Provide a hashing utility for LangChain documents."""
+r"""Provide document hashing functions."""
 
 from __future__ import annotations
 

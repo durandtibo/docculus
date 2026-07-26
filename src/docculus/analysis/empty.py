@@ -1,4 +1,4 @@
-r"""Empty document detection."""
+r"""Corpus-wide search for empty documents."""
 
 from __future__ import annotations
 

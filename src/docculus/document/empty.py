@@ -1,4 +1,4 @@
-r"""Empty document detection."""
+r"""Per-document emptiness checks."""
 
 from __future__ import annotations
 
