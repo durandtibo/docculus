@@ -53,46 +53,178 @@
     <br/>
 </p>
 
-A python library for LangChain documents
-
 ## Overview
 
-`docculus` provides utilities for working with `langchain_core.documents.Document` objects:
-analyzing, transforming, hashing, validating, and displaying them.
+`docculus` is a lightweight Python library that makes it easy to analyze, transform, hash, and
+validate [
+`langchain_core.documents.Document`](https://python.langchain.com/api_reference/core/documents/langchain_core.documents.base.Document.html)
+objects.
 
-- `docculus.analysis` — content/metadata statistics, duplicate and empty-document detection
-- `docculus.transform` — filter, sort, deduplicate, truncate, assign ids, and format documents
-  into LLM-friendly strings (XML, Markdown, JSON)
-- `docculus.hashing` — deterministic hashing of documents (including a stable UUID variant)
-- `docculus.validation` — consistency checks across documents sharing an id
-- `docculus.display` — pretty-print documents and their metadata to the terminal
-- `docculus.utils` — helpers such as fake document generation for testing
+**Quick Links:**
+
+- [Documentation](https://durandtibo.github.io/docculus/)
+- [Installation](#installation)
+- [Features](#features)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Why docculus?
+
+Working with collections of LangChain documents often means writing the same boilerplate over and
+over: counting duplicates, filtering by metadata, formatting documents into an LLM-friendly
+prompt, or hashing content to detect changes. `docculus` packages these operations into a small,
+well-tested API:
+
+**Deduplicate and format documents for a prompt:**
+
+```pycon
+>>> from langchain_core.documents import Document
+>>> from docculus.transform import deduplicate_documents, format_documents
+>>> docs = [
+...     Document(id="1", page_content="The cat sat on the mat."),
+...     Document(id="2", page_content="The cat sat on the mat."),
+...     Document(id="3", page_content="The dog chased the ball."),
+... ]
+>>> unique_docs = deduplicate_documents(docs)
+>>> print(format_documents(unique_docs, output_format="markdown"))
+
+```
+
+**Inspect a corpus at a glance:**
+
+```pycon
+>>> from docculus.analysis import compute_content_stats_exact
+>>> stats = compute_content_stats_exact(docs)
+>>> stats["count"], stats["duplicate_count"]
+(3, 1)
+
+```
+
+**Check consistency across documents sharing an id:**
+
+```pycon
+>>> from docculus.validation import validate_document_consistency
+>>> validate_document_consistency(docs)
+
+```
+
+## Features
+
+`docculus` provides a comprehensive set of utilities for working with `Document` objects:
+
+### 📊 **Analysis**
+
+Corpus-wide, read-only inspection utilities:
+
+- Content statistics (exact and approximate) with `compute_content_stats_exact()` and
+  `compute_content_stats_approx()`
+- Metadata statistics with `compute_metadata_stats()`
+- Duplicate and empty document detection with `find_duplicate_document_ids()`,
+  `find_empty_documents()`, and `find_empty_document_ids()`
+- Human-readable report printing with `print_content_stats_report()` and
+  `print_metadata_stats_report()`
+
+### 🔄 **Transform**
+
+Utilities that produce a new document list:
+
+- Deduplicate documents with `deduplicate_documents()`
+- Filter by metadata with `filter_by_metadata()`, `filter_by_metadata_range()`, and
+  `filter_by_metadata_values()`
+- Sort with `sort_by_metadata()` and truncate with `truncate_documents()`
+- Assign or copy ids with `assign_ids()` and `copy_ids_to_metadata()`
+- Format documents into LLM-friendly strings (XML, Markdown, JSON) with `format_documents()`
+
+### 📄 **Document**
+
+Per-document utilities:
+
+- Id generation with `generate_id()`, `generate_random_id()`, and `generate_deterministic_id()`
+- Emptiness checks with `is_empty()` and `is_whitespace_only()`
+- Length helpers with `get_length()`, `get_lengths()`, `get_longest_document()`, and
+  `get_shortest_document()`
+
+### #️⃣ **Hashing**
+
+Deterministic hashing of documents:
+
+- Hash a document or a sequence of documents with `hash_document()` and `hash_documents()`
+- Generate a stable UUID from a document with `hash_document_to_uuid()`
+- Register custom hashing strategies with `register_document_hasher()`
+
+### ✅ **Validation**
+
+Consistency checks across documents sharing an id, via `validate_document_consistency()`.
+
+### 🖨️ **Display**
+
+Pretty-print documents and their metadata to the terminal with `print_document()`,
+`print_documents()`, and `print_documents_metadata()`.
+
+### 🗄️ **Store**
+
+Persist and retrieve documents with a common `BaseDocumentStore` interface, with
+`InMemoryDocumentStore`, `SQLiteDocumentStore`, and `DuckDBDocumentStore` implementations
+(plus typed variants).
 
 ## Installation
+
+We highly recommend installing
+`docculus` in
+a [virtual environment](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
+to avoid dependency conflicts.
+
+### Using uv (recommended)
+
+[`uv`](https://docs.astral.sh/uv/) is a fast Python package installer and resolver:
+
+```shell
+uv pip install docculus
+```
+
+**Install with all optional dependencies:**
+
+```shell
+uv pip install docculus[all]
+```
+
+**Install with specific optional dependencies:**
+
+```shell
+uv pip install docculus[duckdb,rich]  # with DuckDB and rich
+```
+
+### Using pip
+
+Alternatively, you can use `pip`:
 
 ```shell
 pip install docculus
 ```
 
-## Quick start
+**Install with all optional dependencies:**
 
-```python
-from langchain_core.documents import Document
-from docculus.analysis import compute_content_stats_exact
-from docculus.transform import deduplicate_documents, format_documents
-
-docs = [
-    Document(id="1", page_content="The cat sat on the mat."),
-    Document(id="2", page_content="The cat sat on the mat."),
-    Document(id="3", page_content="The dog chased the ball."),
-]
-
-stats = compute_content_stats_exact(docs)
-print(stats["count"], stats["duplicate_count"])
-
-unique_docs = deduplicate_documents(docs)
-print(format_documents(unique_docs, output_format="markdown"))
+```shell
+pip install docculus[all]
 ```
+
+### Requirements
+
+- **Python**: 3.10 or higher
+- **Core dependencies**: [`coola`](https://github.com/durandtibo/coola),
+  [`langchain-core`](https://python.langchain.com/api_reference/core/index.html)
+
+**Optional dependencies** (install with `docculus[all]`):
+[DuckDB](https://duckdb.org/) •
+[Faker](https://faker.readthedocs.io/) •
+[persista](https://github.com/durandtibo/persista) •
+[rich](https://rich.readthedocs.io/)
+
+### Compatibility Matrix
+
+| `coola` | `coola`         | `langchain-core` | `duckdb`<sup>*</sup> | `faker`<sup>*</sup> | `persista`<sup>*</sup> | `rich`<sup>*</sup> | `python` |
+|---------|-----------------|------------------|----------------------|---------------------|------------------------|--------------------|----------|
+| `main`  | `>=1.1.10,<1.0` | `>=1.4,<2.0`     | `>=1.3,<2.0`         | `>=40.0,<41.0`      | `>=0.0.3,<1.0`         | `>=14.0.0,<16.0`   | `>=3.10` |
 
 ## Contributing
 
@@ -108,7 +240,8 @@ your changes.
 
 ## API Stability
 
-:warning: **Important**: As `docculus` is under active development, its API is not yet stable and may
+:warning: **Important**: As `docculus` is under active development, its API is not yet stable and
+may
 change between releases. We recommend pinning a specific version in your project’s dependencies to
 ensure consistent behavior.
 
