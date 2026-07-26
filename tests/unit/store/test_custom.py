@@ -5,19 +5,19 @@ from typing import TYPE_CHECKING
 import pytest
 from langchain_core.documents import Document
 
+from docculus.store.custom import (
+    DuckDBDocumentStore,
+    InMemoryDocumentStore,
+    SQLiteDocumentStore,
+    TypedDuckDBDocumentStore,
+    TypedSQLiteDocumentStore,
+)
 from docculus.testing.fixtures import persista_available
 from docculus.utils.imports import is_persista_available
 
 if is_persista_available():
     from persista.utils.imports import is_duckdb_available
 
-    from docculus.store.custom import (
-        DuckDBDocumentStore,
-        InMemoryDocumentStore,
-        SQLiteDocumentStore,
-        TypedDuckDBDocumentStore,
-        TypedSQLiteDocumentStore,
-    )
 
 if TYPE_CHECKING:
     from docculus.store.document import DocumentStore
