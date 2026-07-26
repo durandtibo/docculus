@@ -51,7 +51,7 @@ dependencies = [
 
 [project.optional-dependencies]
 faker = [ "faker >=40.0,<41.0" ]
-persista = [ "persista >=0.0.3a3" ]
+persista = [ "persista >=0.0.3a4" ]
 rich = ["rich>=14.0.0,<16.0"]
 
 [dependency-groups]
