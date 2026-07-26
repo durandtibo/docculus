@@ -3,9 +3,8 @@ from __future__ import annotations
 import io
 
 import pytest
-from rich.console import Console
-from rich.table import Table
-from rich.text import Text
+from coola.testing.fixtures import rich_available
+from coola.utils.imports import is_rich_available
 
 from docculus.analysis import print_metadata_stats_report
 from docculus.analysis.metadata_print import (
@@ -16,6 +15,11 @@ from docculus.analysis.metadata_print import (
     _build_summary_table,
     _format_count,
 )
+
+if is_rich_available():
+    from rich.console import Console
+    from rich.table import Table
+    from rich.text import Text
 
 
 @pytest.fixture
@@ -115,26 +119,31 @@ def test_format_count_full() -> None:
 ##########################################
 
 
+@rich_available
 def test_build_overview_line_returns_text(stats: dict) -> None:
     result = _build_overview_line(stats, 100)
     assert isinstance(result, Text)
 
 
+@rich_available
 def test_build_overview_line_contains_doc_count(stats: dict) -> None:
     result = _build_overview_line(stats, 100)
     assert "100 docs" in result.plain
 
 
+@rich_available
 def test_build_overview_line_contains_distinct_keys(stats: dict) -> None:
     result = _build_overview_line(stats, 100)
     assert "2 distinct keys" in result.plain
 
 
+@rich_available
 def test_build_overview_line_large_count_uses_separator(stats: dict) -> None:
     result = _build_overview_line(stats, 12000)
     assert "12,000 docs" in result.plain
 
 
+@rich_available
 def test_build_overview_line_missing_distinct_keys_defaults_to_zero() -> None:
     result = _build_overview_line({}, 5)
     assert result.plain == "5 docs  ·  0 distinct keys"
@@ -145,11 +154,13 @@ def test_build_overview_line_missing_distinct_keys_defaults_to_zero() -> None:
 ##########################################
 
 
+@rich_available
 def test_build_summary_table_returns_table(stats: dict) -> None:
     result = _build_summary_table(stats, 100)
     assert isinstance(result, Table)
 
 
+@rich_available
 def test_build_summary_table_missing_optional_keys_does_not_raise() -> None:
     minimal_stats = {
         "avg_keys": 1.0,
@@ -237,16 +248,19 @@ def test_build_key_sample_non_string_values_stringified() -> None:
 ##########################################
 
 
+@rich_available
 def test_build_per_key_table_returns_table(stats: dict) -> None:
     result = _build_per_key_table(stats["per_key"], 100)
     assert isinstance(result, Table)
 
 
+@rich_available
 def test_build_per_key_table_empty_dict_returns_table() -> None:
     result = _build_per_key_table({}, 10)
     assert isinstance(result, Table)
 
 
+@rich_available
 def test_build_per_key_table_missing_keys_does_not_raise() -> None:
     sparse_per_key = {
         "x": {
@@ -267,22 +281,26 @@ def test_build_per_key_table_missing_keys_does_not_raise() -> None:
 ###############################################
 
 
+@rich_available
 def test_print_metadata_stats_report_runs_without_error(stats: dict, console: Console) -> None:
     print_metadata_stats_report(stats, console=console)
 
 
+@rich_available
 def test_print_metadata_stats_report_dirty_runs_without_error(
     dirty_stats: dict, console: Console
 ) -> None:
     print_metadata_stats_report(dirty_stats, console=console)
 
 
+@rich_available
 def test_print_metadata_stats_report_empty_runs_without_error(
     empty_stats: dict, console: Console
 ) -> None:
     print_metadata_stats_report(empty_stats, console=console)
 
 
+@rich_available
 def test_print_metadata_stats_report_creates_own_console_if_none_given(
     stats: dict,
 ) -> None:
@@ -290,10 +308,12 @@ def test_print_metadata_stats_report_creates_own_console_if_none_given(
     print_metadata_stats_report(stats)
 
 
+@rich_available
 def test_print_metadata_stats_report_custom_title(stats: dict, console: Console) -> None:
     print_metadata_stats_report(stats, title="Custom Title", console=console)
 
 
+@rich_available
 def test_print_metadata_stats_report_no_per_key_data(console: Console) -> None:
     stats_without_keys = {
         "count": 10,
@@ -307,6 +327,7 @@ def test_print_metadata_stats_report_no_per_key_data(console: Console) -> None:
     print_metadata_stats_report(stats_without_keys, console=console)
 
 
+@rich_available
 def test_print_metadata_stats_report_missing_optional_per_key_field(
     console: Console,
 ) -> None:
@@ -333,6 +354,7 @@ def test_print_metadata_stats_report_missing_optional_per_key_field(
     print_metadata_stats_report(minimal_stats, console=console)
 
 
+@rich_available
 def test_print_metadata_stats_report_does_not_mutate_input(stats: dict, console: Console) -> None:
     original = dict(stats)
     print_metadata_stats_report(stats, console=console)
