@@ -14,6 +14,7 @@ __all__ = [
     "format_documents_as_markdown",
     "format_documents_as_xml",
     "sort_by_metadata",
+    "truncate_documents",
 ]
 
 from docculus.transform.dedup import deduplicate_documents
@@ -30,3 +31,4 @@ from docculus.transform.format import (
 )
 from docculus.transform.id import assign_ids, copy_ids_to_metadata
 from docculus.transform.sort import sort_by_metadata
+from docculus.transform.truncate import truncate_documents
