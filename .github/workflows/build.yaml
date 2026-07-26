@@ -21,17 +21,8 @@ jobs:
         dist-type: [ "sdist", "wheel" ]
         package-extra: [
           "",
-          'anthropic',
-          'chroma',
-          'duckdb',
-          'faker',
-          'google-genai',
-          'huggingface',
-          'ollama',
-          'openai',
-          'polars',
-          'sentence-transformers',
-          'text-splitters',
+          'persista',
+          'rich',
         ]
 
     steps:

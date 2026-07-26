@@ -23,17 +23,8 @@ jobs:
         python-version: [ '3.14', '3.13', '3.12', '3.11', '3.10' ]
         extra: [
           'all',
-          'anthropic',
-          'chroma',
-          'duckdb',
-          'faker',
-          'google-genai',
-          'huggingface',
-          'ollama',
-          'openai',
-          'polars',
-          'sentence-transformers',
-          'text-splitters',
+          'persista',
+          'rich',
         ]
 
     steps:
