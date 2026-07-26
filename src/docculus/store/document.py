@@ -8,6 +8,7 @@ __all__ = ["DocumentStore", "MetadataMode"]
 import json
 from typing import TYPE_CHECKING, Any, Literal
 
+from coola.display import MultilineDisplayMixin
 from langchain_core.documents import Document
 
 from docculus.store.base import BaseDocumentStore
@@ -24,7 +25,7 @@ _CONTENT_KEY = "page_content"
 _METADATA_KEY = "metadata"
 
 
-class DocumentStore(BaseDocumentStore):
+class DocumentStore(BaseDocumentStore, MultilineDisplayMixin):
     r"""Implement a document store backed by a
     :class:`persista.store.BaseStore`.
 
@@ -199,3 +200,6 @@ class DocumentStore(BaseDocumentStore):
     @property
     def closed(self) -> bool:
         return self._store.closed
+
+    def _get_repr_kwargs(self) -> dict[str, Any]:
+        return {"store": self._store, "metadata_mode": self._metadata_mode}
