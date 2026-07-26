@@ -7,22 +7,23 @@ __all__ = ["assign_ids", "copy_ids_to_metadata"]
 
 from typing import TYPE_CHECKING
 
-from docculus.hashing import hash_document_to_uuid
+from docculus.document import generate_id
 
 if TYPE_CHECKING:
     from langchain_core.documents import Document
 
 
-def assign_ids(docs: list[Document], *, force: bool = False) -> list[Document]:
-    """Assign a stable UUID to each document that does not already have
-    one.
+def assign_ids(
+    docs: list[Document], *, mode: str = "deterministic", force: bool = False
+) -> list[Document]:
+    """Assign a unique identifier to each document that does not already
+    have one.
 
     Iterates over ``docs`` and sets :attr:`~langchain_core.documents.Document.id`
     on any document whose ``id`` is ``None``, using
-    :func:`~docculus.hashing.hash_document_to_uuid` to derive a
-    deterministic UUID from the document's content and metadata.
-    Documents that already have an ID are left unchanged unless
-    ``force=True``.
+    :func:`~docculus.document.generate_id` to generate an identifier
+    according to ``mode``. Documents that already have an ID are left
+    unchanged unless ``force=True``.
 
     .. note::
         This function mutates the documents in place and also returns
@@ -31,6 +32,12 @@ def assign_ids(docs: list[Document], *, force: bool = False) -> list[Document]:
     Args:
         docs: The list of :class:`~langchain_core.documents.Document`
             instances to assign IDs to.
+        mode: The generation strategy passed to
+            :func:`~docculus.document.generate_id`. ``'deterministic'``
+            derives the identifier from each document's ``page_content``
+            and ``metadata``, so the same content always yields the same
+            identifier. ``'random'`` generates a fresh, unrelated
+            identifier on every call.
         force: If ``True``, recomputes and overwrites the ID for every
             document, even those that already have one.  Defaults to
             ``False``.
@@ -61,7 +68,7 @@ def assign_ids(docs: list[Document], *, force: bool = False) -> list[Document]:
     """
     for doc in docs:
         if force or doc.id is None:
-            doc.id = hash_document_to_uuid(doc)
+            doc.id = generate_id(doc, mode=mode)
     return docs
 
 
