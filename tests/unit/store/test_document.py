@@ -12,6 +12,8 @@ from docculus.utils.imports import is_persista_available
 if is_persista_available():
     from persista.store import BaseStore, InMemoryStore, SQLiteStore
 
+pytest.importorskip("persista")
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
