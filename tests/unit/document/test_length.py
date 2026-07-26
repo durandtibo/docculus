@@ -3,9 +3,9 @@ from __future__ import annotations
 from langchain_core.documents import Document
 
 from docculus.document import (
-    get_id_lengths,
     get_length,
     get_lengths,
+    get_lengths_with_ids,
     get_longest_document,
     get_shortest_document,
 )
@@ -61,59 +61,59 @@ def test_get_lengths_generator() -> None:
 
 
 ####################################
-#     Tests for get_id_lengths     #
+#     Tests for get_lengths_with_ids     #
 ####################################
 
 
-def test_get_id_lengths_empty() -> None:
-    assert get_id_lengths([]) == []
+def test_get_lengths_with_ids_empty() -> None:
+    assert get_lengths_with_ids([]) == []
 
 
-def test_get_id_lengths_basic() -> None:
+def test_get_lengths_with_ids_basic() -> None:
     docs = [
         Document(id="a", page_content="hello"),
         Document(id="b", page_content="hello world"),
     ]
-    assert get_id_lengths(docs) == [("a", 5), ("b", 11)]
+    assert get_lengths_with_ids(docs) == [("a", 5), ("b", 11)]
 
 
-def test_get_id_lengths_none_content() -> None:
+def test_get_lengths_with_ids_none_content() -> None:
     doc = Document(id="a", page_content="x")
     doc.page_content = None
-    assert get_id_lengths([doc]) == [("a", 0)]
+    assert get_lengths_with_ids([doc]) == [("a", 0)]
 
 
-def test_get_id_lengths_generator() -> None:
+def test_get_lengths_with_ids_generator() -> None:
     def gen() -> object:
         yield Document(id="a", page_content="ab")
         yield Document(id="b", page_content="")
 
-    assert get_id_lengths(gen()) == [("a", 2), ("b", 0)]
+    assert get_lengths_with_ids(gen()) == [("a", 2), ("b", 0)]
 
 
-def test_get_id_lengths_sort_true() -> None:
+def test_get_lengths_with_ids_sort_true() -> None:
     docs = [
         Document(id="a", page_content="hello world"),
         Document(id="b", page_content=""),
         Document(id="c", page_content="hi"),
     ]
-    assert get_id_lengths(docs, sort=True) == [("b", 0), ("c", 2), ("a", 11)]
+    assert get_lengths_with_ids(docs, sort=True) == [("b", 0), ("c", 2), ("a", 11)]
 
 
-def test_get_id_lengths_sort_false_default() -> None:
+def test_get_lengths_with_ids_sort_false_default() -> None:
     docs = [
         Document(id="a", page_content="hello world"),
         Document(id="b", page_content="hi"),
     ]
-    assert get_id_lengths(docs) == [("a", 11), ("b", 2)]
+    assert get_lengths_with_ids(docs) == [("a", 11), ("b", 2)]
 
 
-def test_get_id_lengths_sort_stable_ties() -> None:
+def test_get_lengths_with_ids_sort_stable_ties() -> None:
     docs = [
         Document(id="a", page_content="ab"),
         Document(id="b", page_content="cd"),
     ]
-    assert get_id_lengths(docs, sort=True) == [("a", 2), ("b", 2)]
+    assert get_lengths_with_ids(docs, sort=True) == [("a", 2), ("b", 2)]
 
 
 ###########################################

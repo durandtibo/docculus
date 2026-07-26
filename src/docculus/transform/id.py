@@ -7,7 +7,7 @@ __all__ = ["assign_ids", "copy_ids_to_metadata"]
 
 from typing import TYPE_CHECKING
 
-from docculus.hashing import hash_document_uuid
+from docculus.hashing import hash_document_to_uuid
 
 if TYPE_CHECKING:
     from langchain_core.documents import Document
@@ -19,7 +19,7 @@ def assign_ids(docs: list[Document], *, force: bool = False) -> list[Document]:
 
     Iterates over ``docs`` and sets :attr:`~langchain_core.documents.Document.id`
     on any document whose ``id`` is ``None``, using
-    :func:`~docculus.hashing.hash_document_uuid` to derive a
+    :func:`~docculus.hashing.hash_document_to_uuid` to derive a
     deterministic UUID from the document's content and metadata.
     Documents that already have an ID are left unchanged unless
     ``force=True``.
@@ -61,7 +61,7 @@ def assign_ids(docs: list[Document], *, force: bool = False) -> list[Document]:
     """
     for doc in docs:
         if force or doc.id is None:
-            doc.id = hash_document_uuid(doc)
+            doc.id = hash_document_to_uuid(doc)
     return docs
 
 

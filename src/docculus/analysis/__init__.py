@@ -16,7 +16,7 @@ __all__ = [
     "compute_content_stats_approx",
     "compute_content_stats_exact",
     "compute_metadata_stats",
-    "find_duplicate_content_document_ids",
+    "find_duplicate_document_ids",
     "find_empty_document_ids",
     "find_empty_documents",
     "print_content_stats_report",
@@ -32,7 +32,7 @@ from docculus.analysis.content_exact import (
     compute_content_stats_exact,
 )
 from docculus.analysis.content_print import print_content_stats_report
-from docculus.analysis.dedup import find_duplicate_content_document_ids
+from docculus.analysis.dedup import find_duplicate_document_ids
 from docculus.analysis.empty import (
     find_empty_document_ids,
     find_empty_documents,

@@ -2,7 +2,7 @@ r"""Duplicate document detection."""
 
 from __future__ import annotations
 
-__all__ = ["find_duplicate_content_document_ids"]
+__all__ = ["find_duplicate_document_ids"]
 
 import hashlib
 from typing import TYPE_CHECKING, Any
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from langchain_core.documents import Document
 
 
-def find_duplicate_content_document_ids(documents: Iterable[Document]) -> list[list[Any]]:
+def find_duplicate_document_ids(documents: Iterable[Document]) -> list[list[Any]]:
     r"""Group document ids that share exactly the same ``page_content``.
 
     Documents are consumed one at a time, so this works with generators
@@ -38,13 +38,13 @@ def find_duplicate_content_document_ids(documents: Iterable[Document]) -> list[l
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.analysis import find_duplicate_content_document_ids
+        >>> from docculus.analysis import find_duplicate_document_ids
         >>> docs = [
         ...     Document(id="a", page_content="hello"),
         ...     Document(id="b", page_content="hello"),
         ...     Document(id="c", page_content="world"),
         ... ]
-        >>> find_duplicate_content_document_ids(docs)
+        >>> find_duplicate_document_ids(docs)
         [['a', 'b']]
 
         ```
