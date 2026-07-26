@@ -366,6 +366,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+persista = [
+    { name = "persista" },
+]
 rich = [
     { name = "rich" },
 ]
@@ -397,9 +400,10 @@ docs = [
 requires-dist = [
     { name = "coola", specifier = ">=1.1.10a0,<2.0" },
     { name = "langchain-core", specifier = ">=1.4,<2.0" },
+    { name = "persista", marker = "extra == 'persista'", specifier = ">=0.0.3a3" },
     { name = "rich", marker = "extra == 'rich'", specifier = ">=14.0.0,<16.0" },
 ]
-provides-extras = ["rich"]
+provides-extras = ["persista", "rich"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -564,6 +568,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "iden"
+version = "0.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "coola" },
+    { name = "objectory" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e4/ee/ff74e0b33f53f69198bfd4b194ad650974476e7c87c38f58f7c399212d1a/iden-0.4.1.tar.gz", hash = "sha256:ebeb979ecf65e4a8d33a809cd8924e59fed950f0ff7528990e16daf58fd76a23", size = 41918, upload-time = "2026-06-15T04:05:32.432Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ef/bc/9d9208c0b889052acbcf772226225e40591b3d5cf39bf6769a6816b98bda/iden-0.4.1-py3-none-any.whl", hash = "sha256:fe92653248a5ba098ae6e8de7ae7d88b62e0058e778ad95e132ff086943cd8d6", size = 95364, upload-time = "2026-06-15T04:05:33.47Z" },
 ]
 
 [[package]]
@@ -985,6 +1002,15 @@ wheels = [
 ]
 
 [[package]]
+name = "objectory"
+version = "0.3.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/38/f46a0603c7f59ffea5c44d0bd2f484c1ed2ecbd44a0c3b6cd61ef41d781e/objectory-0.3.1.tar.gz", hash = "sha256:c3b4f387db31470058d8b34d930daeaacb25eb09384c1e266eaf62ca5b15fc8b", size = 16595, upload-time = "2025-12-19T09:13:32.658Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d5/4d/35db369f225cc44df8fd1a7b06b332da3aefe5ed5b9db512046bf195d0a8/objectory-0.3.1-py3-none-any.whl", hash = "sha256:663a433c7c8ac4971617a61be4f0a9c258bd518bea00bf9eb3f337504ac4c7ce", size = 20701, upload-time = "2025-12-19T09:13:33.809Z" },
+]
+
+[[package]]
 name = "orjson"
 version = "3.11.9"
 source = { registry = "https://pypi.org/simple" }
@@ -1090,6 +1116,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/5a/82/42f767fc1c1143d6fd36efb827202a2d997a375e160a71eb2888a925aac1/pathspec-1.1.1.tar.gz", hash = "sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a", size = 135180, upload-time = "2026-04-27T01:46:08.907Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl", hash = "sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189", size = 57328, upload-time = "2026-04-27T01:46:07.06Z" },
+]
+
+[[package]]
+name = "persista"
+version = "0.0.3a3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "coola" },
+    { name = "iden" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0e/74/19d6f5e31ca08943a2704c3e5bd13763cc12775857b298995c197d376d8e/persista-0.0.3a3.tar.gz", hash = "sha256:ccbe8c24d3fa4b71896198279480889604598952108978195e74971413657dae", size = 65882, upload-time = "2026-07-25T23:41:00.503Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cf/07/3d5f4c2a624b54ac8658b0472eb0589a4c9d39d062af78f4e95a8b23b1d4/persista-0.0.3a3-py3-none-any.whl", hash = "sha256:a0eb416b6a9cb0a6450dd159a2690d8b4f18be416372e8770a887e621e6f7753", size = 98786, upload-time = "2026-07-25T23:40:59.307Z" },
 ]
 
 [[package]]

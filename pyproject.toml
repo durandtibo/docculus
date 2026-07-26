@@ -50,6 +50,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+persista = [ "persista >=0.0.3a3" ]
 rich = ["rich>=14.0.0,<16.0"]
 
 [dependency-groups]
