@@ -3,9 +3,8 @@ from __future__ import annotations
 import io
 
 import pytest
-from rich.console import Console
-from rich.table import Table
-from rich.text import Text
+from coola.testing.fixtures import rich_available
+from coola.utils.imports import is_rich_available
 
 from docculus.analysis import print_content_stats_report
 from docculus.analysis.content_print import (
@@ -17,6 +16,11 @@ from docculus.analysis.content_print import (
     _format_percentage_of_total,
     _format_value,
 )
+
+if is_rich_available():
+    from rich.console import Console
+    from rich.table import Table
+    from rich.text import Text
 
 
 @pytest.fixture
@@ -177,6 +181,7 @@ def test_format_percentage_of_total_has_leading_space() -> None:
 ########################################
 
 
+@rich_available
 def test_build_stats_table_returns_table_and_bool(exact_stats: dict) -> None:
     table, any_issues = _build_stats_table(
         exact_stats, is_exact=True, p_suffix="", dup_key="duplicate_count", count=1000
@@ -185,6 +190,7 @@ def test_build_stats_table_returns_table_and_bool(exact_stats: dict) -> None:
     assert isinstance(any_issues, bool)
 
 
+@rich_available
 def test_build_stats_table_flags_issues_when_present(exact_stats: dict) -> None:
     _, any_issues = _build_stats_table(
         exact_stats, is_exact=True, p_suffix="", dup_key="duplicate_count", count=1000
@@ -192,6 +198,7 @@ def test_build_stats_table_flags_issues_when_present(exact_stats: dict) -> None:
     assert any_issues is True  # exact_stats has empty_count=3, etc.
 
 
+@rich_available
 def test_build_stats_table_no_issues_when_all_zero() -> None:
     clean_stats = {
         "avg_chars": 5,
@@ -214,6 +221,7 @@ def test_build_stats_table_no_issues_when_all_zero() -> None:
     assert any_issues is False
 
 
+@rich_available
 def test_build_stats_table_approx_uses_approx_dup_key(approx_stats: dict) -> None:
     table, any_issues = _build_stats_table(
         approx_stats,
@@ -226,6 +234,7 @@ def test_build_stats_table_approx_uses_approx_dup_key(approx_stats: dict) -> Non
     assert any_issues is True
 
 
+@rich_available
 def test_build_stats_table_missing_keys_does_not_raise() -> None:
     # sparse dict should not raise, since the function uses .get(...)
     table, any_issues = _build_stats_table(
@@ -240,21 +249,25 @@ def test_build_stats_table_missing_keys_does_not_raise() -> None:
 ##########################################
 
 
+@rich_available
 def test_build_overview_line_returns_text(exact_stats: dict) -> None:
     result = _build_overview_line(exact_stats, 1000)
     assert isinstance(result, Text)
 
 
+@rich_available
 def test_build_overview_line_contains_doc_count(exact_stats: dict) -> None:
     result = _build_overview_line(exact_stats, 1000)
     assert "1,000 docs" in result.plain
 
 
+@rich_available
 def test_build_overview_line_contains_char_count(exact_stats: dict) -> None:
     result = _build_overview_line(exact_stats, 1000)
     assert "542,300 chars" in result.plain
 
 
+@rich_available
 def test_build_overview_line_missing_total_chars_does_not_raise() -> None:
     result = _build_overview_line({}, 5)
     assert isinstance(result, Text)
@@ -265,11 +278,13 @@ def test_build_overview_line_missing_total_chars_does_not_raise() -> None:
 #########################################
 
 
+@rich_available
 def test_build_doc_ids_grid_returns_table(exact_stats: dict) -> None:
     result = _build_doc_ids_grid(exact_stats)
     assert isinstance(result, Table)
 
 
+@rich_available
 def test_build_doc_ids_grid_missing_keys_does_not_raise() -> None:
     result = _build_doc_ids_grid({})
     assert isinstance(result, Table)
@@ -280,16 +295,19 @@ def test_build_doc_ids_grid_missing_keys_does_not_raise() -> None:
 ########################################
 
 
+@rich_available
 def test_build_status_line_no_issues() -> None:
     result = _build_status_line(False)
     assert "no issues detected" in result.plain
 
 
+@rich_available
 def test_build_status_line_with_issues() -> None:
     result = _build_status_line(True)
     assert "potential issues detected" in result.plain
 
 
+@rich_available
 def test_build_status_line_returns_text() -> None:
     assert isinstance(_build_status_line(False), Text)
     assert isinstance(_build_status_line(True), Text)
@@ -300,26 +318,31 @@ def test_build_status_line_returns_text() -> None:
 ##################################################
 
 
+@rich_available
 def test_build_approx_footnote_items_exact_returns_empty(exact_stats: dict) -> None:
     assert _build_approx_footnote_items(exact_stats, is_exact=True, count=1000) == []
 
 
+@rich_available
 def test_build_approx_footnote_items_approx_returns_one_item(approx_stats: dict) -> None:
     items = _build_approx_footnote_items(approx_stats, is_exact=False, count=1000)
     assert len(items) == 1
     assert isinstance(items[0], Text)
 
 
+@rich_available
 def test_build_approx_footnote_items_contains_fp_rate(approx_stats: dict) -> None:
     items = _build_approx_footnote_items(approx_stats, is_exact=False, count=1000)
     assert "0.01" in items[0].plain
 
 
+@rich_available
 def test_build_approx_footnote_items_contains_sample_size(approx_stats: dict) -> None:
     items = _build_approx_footnote_items(approx_stats, is_exact=False, count=1000)
     assert "1000" in items[0].plain
 
 
+@rich_available
 def test_build_approx_footnote_items_missing_keys_does_not_raise() -> None:
     items = _build_approx_footnote_items({}, is_exact=False, count=0)
     assert len(items) == 1
@@ -330,24 +353,28 @@ def test_build_approx_footnote_items_missing_keys_does_not_raise() -> None:
 ################################################
 
 
+@rich_available
 def test_print_content_stats_report_exact_runs_without_error(
     exact_stats: dict, console: Console
 ) -> None:
     print_content_stats_report(exact_stats, console=console)
 
 
+@rich_available
 def test_print_content_stats_report_approx_runs_without_error(
     approx_stats: dict, console: Console
 ) -> None:
     print_content_stats_report(approx_stats, console=console)
 
 
+@rich_available
 def test_print_content_stats_report_empty_runs_without_error(
     empty_stats: dict, console: Console
 ) -> None:
     print_content_stats_report(empty_stats, console=console)
 
 
+@rich_available
 def test_print_content_stats_report_creates_own_console_if_none_given(
     exact_stats: dict,
 ) -> None:
@@ -355,10 +382,12 @@ def test_print_content_stats_report_creates_own_console_if_none_given(
     print_content_stats_report(exact_stats)
 
 
+@rich_available
 def test_print_content_stats_report_custom_title(exact_stats: dict, console: Console) -> None:
     print_content_stats_report(exact_stats, title="Custom Title", console=console)
 
 
+@rich_available
 def test_print_content_stats_report_no_issues(exact_stats: dict, console: Console) -> None:
     healthy_stats = {
         **exact_stats,
@@ -372,6 +401,7 @@ def test_print_content_stats_report_no_issues(exact_stats: dict, console: Consol
     print_content_stats_report(healthy_stats, console=console)
 
 
+@rich_available
 def test_print_content_stats_report_missing_optional_keys(console: Console) -> None:
     # a minimal dict missing several optional keys should not raise,
     # since the function uses .get(...) with defaults throughout
@@ -388,6 +418,7 @@ def test_print_content_stats_report_missing_optional_keys(console: Console) -> N
     print_content_stats_report(minimal_stats, console=console)
 
 
+@rich_available
 def test_print_content_stats_report_single_point_no_chart(
     exact_stats: dict, console: Console
 ) -> None:
@@ -397,6 +428,7 @@ def test_print_content_stats_report_single_point_no_chart(
     print_content_stats_report(single_point_stats, console=console)
 
 
+@rich_available
 def test_print_content_stats_report_does_not_mutate_input(
     exact_stats: dict, console: Console
 ) -> None:

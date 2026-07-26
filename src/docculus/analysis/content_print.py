@@ -6,11 +6,14 @@ __all__ = ["print_content_stats_report"]
 
 from typing import Any
 
-from rich import get_console
-from rich.console import Console, Group
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
+from coola.utils.imports import check_rich, is_rich_available
+
+if is_rich_available():  # pragma: no cover
+    from rich import get_console
+    from rich.console import Console, Group
+    from rich.panel import Panel
+    from rich.table import Table
+    from rich.text import Text
 
 
 def _format_value(value: Any) -> str:
@@ -353,6 +356,7 @@ def print_content_stats_report(
         ... }
         >>> print_content_stats_report(analysis)  # doctest: +SKIP
     """
+    check_rich()
     console = console or get_console()
 
     is_exact = stats.get("duplicate_count_exact", True)
