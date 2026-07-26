@@ -61,8 +61,8 @@ A python library for LangChain documents
 analyzing, transforming, hashing, validating, and displaying them.
 
 - `docculus.analysis` — content/metadata statistics, duplicate and empty-document detection
-- `docculus.transform` — filter, sort, deduplicate, assign ids, and format documents into
-  LLM-friendly strings (XML, Markdown, JSON)
+- `docculus.transform` — filter, sort, deduplicate, truncate, assign ids, and format documents
+  into LLM-friendly strings (XML, Markdown, JSON)
 - `docculus.hashing` — deterministic hashing of documents (including a stable UUID variant)
 - `docculus.validation` — consistency checks across documents sharing an id
 - `docculus.display` — pretty-print documents and their metadata to the terminal
