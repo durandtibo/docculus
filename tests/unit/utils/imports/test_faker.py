@@ -7,9 +7,9 @@ import pytest
 
 from docculus.utils.imports import (
     check_faker,
+    faker_available,
     is_faker_available,
     raise_faker_missing_error,
-    require_faker,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,32 +49,32 @@ def test_is_faker_available() -> None:
     assert isinstance(is_faker_available(), bool)
 
 
-def test_require_faker_with_package() -> None:
+def test_faker_available_with_package() -> None:
     with patch(f"{MODULE}.is_faker_available", lambda: True):
-        fn = require_faker(my_function)
+        fn = faker_available(my_function)
         assert fn(2) == 44
 
 
-def test_require_faker_without_package() -> None:
+def test_faker_available_without_package() -> None:
     with patch(f"{MODULE}.is_faker_available", lambda: False):
-        fn = require_faker(my_function)
+        fn = faker_available(my_function)
         assert fn(2) is None
 
 
-def test_require_faker_decorator_with_package() -> None:
+def test_faker_available_decorator_with_package() -> None:
     with patch(f"{MODULE}.is_faker_available", lambda: True):
 
-        @require_faker
+        @faker_available
         def fn(n: int = 0) -> int:
             return 42 + n
 
         assert fn(2) == 44
 
 
-def test_require_faker_decorator_without_package() -> None:
+def test_faker_available_decorator_without_package() -> None:
     with patch(f"{MODULE}.is_faker_available", lambda: False):
 
-        @require_faker
+        @faker_available
         def fn(n: int = 0) -> int:
             return 42 + n
 
