@@ -10,6 +10,6 @@ __all__ = [
     "register_document_hasher",
 ]
 
+from docculus.hashing.functions import hash_document, hash_documents
 from docculus.hashing.hasher import DocumentHasher, register_document_hasher
-from docculus.hashing.hashing import hash_document, hash_documents
 from docculus.hashing.uuid import hash_document_uuid
