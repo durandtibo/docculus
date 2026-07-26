@@ -51,13 +51,6 @@ jobs:
       package-name: coola
       package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).coola) }}
 
-  iden:
-    needs: get-versions
-    uses: ./.github/workflows/test-package-dep.yaml
-    with:
-      package-name: iden
-      package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).iden) }}
-
   langchain-core:
     needs: get-versions
     uses: ./.github/workflows/test-package-dep.yaml
@@ -65,33 +58,25 @@ jobs:
       package-name: langchain-core
       package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions)['langchain-core']) }}
 
-  langchain:
-    needs: get-versions
-    uses: ./.github/workflows/test-package-dep.yaml
-    with:
-      package-name: langchain
-      package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).langchain) }}
 
-  langgraph:
-    needs: get-versions
-    uses: ./.github/workflows/test-package-dep.yaml
-    with:
-      package-name: langgraph
-      package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).langgraph) }}
 
-  objectory:
-    needs: get-versions
-    uses: ./.github/workflows/test-package-dep.yaml
-    with:
-      package-name: objectory
-      package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).objectory) }}
+  #################################
+  #     Optional dependencies     #
+  #################################
 
-  pydantic:
+  faker:
     needs: get-versions
     uses: ./.github/workflows/test-package-dep.yaml
     with:
-      package-name: pydantic
-      package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).pydantic) }}
+      package-name: faker
+      package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).faker) }}
+
+  persista:
+    needs: get-versions
+    uses: ./.github/workflows/test-package-dep.yaml
+    with:
+      package-name: persista
+      package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).persista) }}
 
   rich:
     needs: get-versions
@@ -99,8 +84,3 @@ jobs:
     with:
       package-name: rich
       package-versions: ${{ toJson(fromJson(needs.get-versions.outputs.package_versions).rich) }}
-
-
-  #################################
-  #     Optional dependencies     #
-  #################################
