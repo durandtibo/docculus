@@ -9,9 +9,19 @@ __all__ = [
     "filter_by_metadata",
     "filter_by_metadata_range",
     "filter_by_metadata_values",
+    "format_documents",
+    "format_documents_as_json",
+    "format_documents_as_markdown",
+    "format_documents_as_xml",
     "sort_by_metadata",
 ]
 
+from docculus.transform.concatenation import (
+    format_documents,
+    format_documents_as_json,
+    format_documents_as_markdown,
+    format_documents_as_xml,
+)
 from docculus.transform.dedup import deduplicate_documents
 from docculus.transform.filter import (
     filter_by_metadata,
