@@ -3,9 +3,9 @@ r"""Document content length utilities."""
 from __future__ import annotations
 
 __all__ = [
-    "get_id_lengths",
     "get_length",
     "get_lengths",
+    "get_lengths_with_ids",
     "get_longest_document",
     "get_shortest_document",
 ]
@@ -77,7 +77,9 @@ def get_lengths(documents: Iterable[Document]) -> list[int]:
     return [get_length(doc) for doc in documents]
 
 
-def get_id_lengths(documents: Iterable[Document], *, sort: bool = False) -> list[tuple[Any, int]]:
+def get_lengths_with_ids(
+    documents: Iterable[Document], *, sort: bool = False
+) -> list[tuple[Any, int]]:
     r"""Compute the number of characters in each document's
     ``page_content``.
 
@@ -98,14 +100,14 @@ def get_id_lengths(documents: Iterable[Document], *, sort: bool = False) -> list
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.document import get_id_lengths
+        >>> from docculus.document import get_lengths_with_ids
         >>> docs = [
         ...     Document(id="a", page_content="hello"),
         ...     Document(id="b", page_content="hello world"),
         ... ]
-        >>> get_id_lengths(docs)
+        >>> get_lengths_with_ids(docs)
         [('a', 5), ('b', 11)]
-        >>> get_id_lengths(docs, sort=True)
+        >>> get_lengths_with_ids(docs, sort=True)
         [('a', 5), ('b', 11)]
 
         ```

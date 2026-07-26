@@ -2,7 +2,7 @@ r"""Provide a hashing utility for LangChain documents."""
 
 from __future__ import annotations
 
-__all__ = ["hash_document_uuid"]
+__all__ = ["hash_document_to_uuid"]
 
 import json
 import uuid
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 _NAMESPACE = uuid.UUID("21e6c43e-bc36-4f09-8e20-98201adab5df")
 
 
-def hash_document_uuid(doc: Document) -> str:
+def hash_document_to_uuid(doc: Document) -> str:
     """Compute a stable, reproducible UUID for a LangChain document.
 
     Uses :func:`uuid.uuid5` (SHA-1 based) with a fixed project-specific
@@ -42,9 +42,9 @@ def hash_document_uuid(doc: Document) -> str:
     Example:
         ```pycon
         >>> from langchain_core.documents import Document
-        >>> from docculus.hashing import hash_document_uuid
+        >>> from docculus.hashing import hash_document_to_uuid
         >>> doc = Document(page_content="Hello", metadata={"source": "cats.txt"})
-        >>> len(hash_document_uuid(doc))
+        >>> len(hash_document_to_uuid(doc))
         36
 
         ```
