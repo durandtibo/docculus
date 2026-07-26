@@ -700,3 +700,16 @@ async def test_aclose_is_idempotent(store: DocumentStore) -> None:
     await store.aclose()
     await store.aclose()
     assert store.closed
+
+
+# --- repr/str ---
+
+
+@persista_available
+async def test_repr(store: DocumentStore) -> None:
+    assert repr(store).startswith("DocumentStore(")
+
+
+@persista_available
+async def test_str(store: DocumentStore) -> None:
+    assert str(store).startswith("DocumentStore(")
