@@ -52,6 +52,8 @@ def find_duplicate_content_document_ids(documents: Iterable[Document]) -> list[l
     groups: dict[bytes, list[Any]] = {}
     for document in documents:
         content = document.page_content
+        if not isinstance(content, str):
+            content = ""
         content_hash = hashlib.sha256(content.encode("utf-8", errors="ignore")).digest()
         groups.setdefault(content_hash, []).append(document.id)
     return [group for group in groups.values() if len(group) > 1]

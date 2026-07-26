@@ -54,3 +54,42 @@
 </p>
 
 A python library for LangChain documents
+
+## Overview
+
+`docculus` provides utilities for working with `langchain_core.documents.Document` objects:
+analyzing, transforming, hashing, validating, and displaying them.
+
+- `docculus.analysis` — content/metadata statistics, duplicate and empty-document detection
+- `docculus.transform` — filter, sort, deduplicate, assign ids, and format documents into
+  LLM-friendly strings (XML, Markdown, JSON)
+- `docculus.hashing` — deterministic hashing of documents (including a stable UUID variant)
+- `docculus.validation` — consistency checks across documents sharing an id
+- `docculus.display` — pretty-print documents and their metadata to the terminal
+- `docculus.utils` — helpers such as fake document generation for testing
+
+## Installation
+
+```shell
+pip install docculus
+```
+
+## Quick start
+
+```python
+from langchain_core.documents import Document
+from docculus.analysis import compute_content_stats_exact
+from docculus.transform import deduplicate_documents, format_documents
+
+docs = [
+    Document(id="1", page_content="The cat sat on the mat."),
+    Document(id="2", page_content="The cat sat on the mat."),
+    Document(id="3", page_content="The dog chased the ball."),
+]
+
+stats = compute_content_stats_exact(docs)
+print(stats["count"], stats["duplicate_count"])
+
+unique_docs = deduplicate_documents(docs)
+print(format_documents(unique_docs, output_format="markdown"))
+```

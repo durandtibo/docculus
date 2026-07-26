@@ -61,27 +61,29 @@ def format_documents(
     output_format: str = "xml",
 ) -> str:
     """Concatenate a list of LangChain documents into a single LLM-
-    friendly string, in either XML or Markdown format.
+    friendly string, in XML, Markdown, or JSON format.
 
-    This is a convenience dispatcher over :func:`format_documents_as_xml`
-    and :func:`format_documents_as_markdown`. See those functions for
-    details on how each format renders documents and metadata.
+    This is a convenience dispatcher over :func:`format_documents_as_xml`,
+    :func:`format_documents_as_markdown`, and
+    :func:`format_documents_as_json`. See those functions for details on
+    how each format renders documents and metadata.
 
     Args:
         documents: The documents to concatenate.
         include_metadata: If ``True``, include each document's metadata
             above its content, sorted alphabetically by key. Defaults to
             ``False``.
-        output_format: Either ``"xml"`` or ``"markdown"``. Defaults to
-            ``"xml"``.
+        output_format: One of ``"xml"``, ``"markdown"``, or ``"json"``.
+            Defaults to ``"xml"``.
 
     Returns:
         A single string with one document block per document, in the same
         order as ``documents``. Returns an empty string if ``documents``
-        is empty.
+        is empty (``"[]"`` for ``output_format="json"``).
 
     Raises:
-        ValueError: If ``output_format`` is not ``"xml"`` or ``"markdown"``.
+        ValueError: If ``output_format`` is not ``"xml"``, ``"markdown"``,
+            or ``"json"``.
 
     Example:
         ```pycon
