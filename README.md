@@ -213,18 +213,19 @@ pip install docculus[all]
 - **Python**: 3.10 or higher
 - **Core dependencies**: [`coola`](https://github.com/durandtibo/coola),
   [`langchain-core`](https://python.langchain.com/api_reference/core/index.html)
-
-**Optional dependencies** (install with `docculus[all]`):
-[DuckDB](https://duckdb.org/) •
-[Faker](https://faker.readthedocs.io/) •
-[persista](https://github.com/durandtibo/persista) •
-[rich](https://rich.readthedocs.io/)
+- **Optional dependencies** (install with `docculus[all]`):
+  [DuckDB](https://duckdb.org/) •
+  [Faker](https://faker.readthedocs.io/) •
+  [persista](https://github.com/durandtibo/persista) •
+  [rich](https://rich.readthedocs.io/)
 
 ### Compatibility Matrix
 
 | `coola` | `coola`         | `langchain-core` | `duckdb`<sup>*</sup> | `faker`<sup>*</sup> | `persista`<sup>*</sup> | `rich`<sup>*</sup> | `python` |
 |---------|-----------------|------------------|----------------------|---------------------|------------------------|--------------------|----------|
 | `main`  | `>=1.1.10,<1.0` | `>=1.4,<2.0`     | `>=1.3,<2.0`         | `>=40.0,<41.0`      | `>=0.0.3,<1.0`         | `>=14.0.0,<16.0`   | `>=3.10` |
+
+<sup>*</sup> indicates an optional dependency
 
 ## Contributing
 
