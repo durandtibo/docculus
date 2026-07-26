@@ -4,12 +4,19 @@ from typing import TYPE_CHECKING
 
 import pytest
 from langchain_core.documents import Document
+from persista.utils.imports import is_duckdb_available
 
 from docculus.testing.fixtures import persista_available
 from docculus.utils.imports import is_persista_available
 
 if is_persista_available():
-    from docculus.store.custom import SQLiteDocumentStore, TypedSQLiteDocumentStore
+    from docculus.store.custom import (
+        DuckDBDocumentStore,
+        InMemoryDocumentStore,
+        SQLiteDocumentStore,
+        TypedDuckDBDocumentStore,
+        TypedSQLiteDocumentStore,
+    )
 
 if TYPE_CHECKING:
     from docculus.store.document import DocumentStore
@@ -22,9 +29,15 @@ pytest.importorskip("persista")
 
 
 _STORE_FACTORIES = {
+    "in_memory": lambda: InMemoryDocumentStore(),
     "sqlite": lambda: SQLiteDocumentStore(),
     "typed_sqlite": lambda: TypedSQLiteDocumentStore(metadata_schema={"author": "TEXT"}),
 }
+if is_duckdb_available():
+    _STORE_FACTORIES |= {
+        "duckdb": lambda: DuckDBDocumentStore(),
+        "typed_duckdb": lambda: TypedDuckDBDocumentStore(metadata_schema={"author": "TEXT"}),
+    }
 
 
 @pytest.fixture(params=list(_STORE_FACTORIES), ids=list(_STORE_FACTORIES))
@@ -77,12 +90,6 @@ def docs() -> list[Document]:
 def test_default_database_is_in_memory(store_cls: str) -> None:
     with _new_document_store(store_cls) as store:
         assert not store.closed
-
-
-@persista_available
-def test_metadata_mode_is_correct(store: DocumentStore, store_cls: str) -> None:
-    expected = "single" if store_cls == "sqlite" else "flat"
-    assert store.metadata_mode == expected
 
 
 # --- set_many / get ---
@@ -259,12 +266,6 @@ async def test_adefault_database_is_in_memory(store_cls: str) -> None:
         assert not opened.closed
 
 
-@persista_available
-async def test_ametadata_mode_is_correct(store: DocumentStore, store_cls: str) -> None:
-    expected = "single" if store_cls == "sqlite" else "flat"
-    assert store.metadata_mode == expected
-
-
 # --- aset_many / aget ---
 
 
@@ -426,6 +427,99 @@ async def test_aopen_is_idempotent(store_cls: str) -> None:
 async def test_aclose_is_idempotent(store: DocumentStore) -> None:
     await store.aclose()
     await store.aclose()  # should not raise
+
+
+###############################################################################
+#     InMemoryDocumentStore-specific tests                                  #
+###############################################################################
+
+
+@persista_available
+def test_in_memory_document_store_default_metadata_mode_is_flat() -> None:
+    with InMemoryDocumentStore() as store:
+        assert store.metadata_mode == "flat"
+
+
+@persista_available
+async def test_ain_memory_document_store_default_metadata_mode_is_flat() -> None:
+    async with InMemoryDocumentStore() as store:
+        assert store.metadata_mode == "flat"
+
+
+###############################################################################
+#     DuckDBDocumentStore-specific tests                                    #
+###############################################################################
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+def test_duckdb_document_store_default_metadata_mode_is_single() -> None:
+    with DuckDBDocumentStore() as store:
+        assert store.metadata_mode == "single"
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+async def test_aduckdb_document_store_default_metadata_mode_is_single() -> None:
+    async with DuckDBDocumentStore() as store:
+        assert store.metadata_mode == "single"
+
+
+###############################################################################
+#     TypedDuckDBDocumentStore-specific tests                               #
+###############################################################################
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+def test_typed_duckdb_document_store_default_metadata_mode_is_flat() -> None:
+    with TypedDuckDBDocumentStore() as store:
+        assert store.metadata_mode == "flat"
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+async def test_atyped_duckdb_document_store_default_metadata_mode_is_flat() -> None:
+    async with TypedDuckDBDocumentStore() as store:
+        assert store.metadata_mode == "flat"
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+def test_typed_duckdb_document_store_without_metadata_schema() -> None:
+    with TypedDuckDBDocumentStore() as store:
+        store.set_many([Document(id="1", page_content="hello", metadata={})])
+        assert store.get("1") == Document(id="1", page_content="hello", metadata={})
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+async def test_atyped_duckdb_document_store_without_metadata_schema() -> None:
+    async with TypedDuckDBDocumentStore() as store:
+        await store.aset_many([Document(id="1", page_content="hello", metadata={})])
+        assert await store.aget("1") == Document(id="1", page_content="hello", metadata={})
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+def test_typed_duckdb_document_store_with_metadata_schema() -> None:
+    with TypedDuckDBDocumentStore(metadata_schema={"author": "TEXT"}) as store:
+        store.set_many([Document(id="1", page_content="hello", metadata={"author": "Alice"})])
+        assert store.get("1") == Document(
+            id="1", page_content="hello", metadata={"author": "Alice"}
+        )
+
+
+@pytest.mark.skipif(not is_duckdb_available(), reason="duckdb is not installed")
+@persista_available
+async def test_atyped_duckdb_document_store_with_metadata_schema() -> None:
+    async with TypedDuckDBDocumentStore(metadata_schema={"author": "TEXT"}) as store:
+        await store.aset_many(
+            [Document(id="1", page_content="hello", metadata={"author": "Alice"})]
+        )
+        assert await store.aget("1") == Document(
+            id="1", page_content="hello", metadata={"author": "Alice"}
+        )
 
 
 ###############################################################################
