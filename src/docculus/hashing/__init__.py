@@ -2,7 +2,14 @@ r"""Contain hashing utilities."""
 
 from __future__ import annotations
 
-__all__ = ["hash_document", "hash_document_uuid", "hash_documents"]
+__all__ = [
+    "DocumentHasher",
+    "hash_document",
+    "hash_document_uuid",
+    "hash_documents",
+    "register_document_hasher",
+]
 
+from docculus.hashing.hasher import DocumentHasher, register_document_hasher
 from docculus.hashing.hashing import hash_document, hash_documents
 from docculus.hashing.uuid import hash_document_uuid
