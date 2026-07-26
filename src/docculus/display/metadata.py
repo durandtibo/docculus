@@ -36,7 +36,7 @@ def print_documents_metadata(
     Args:
         documents: The documents whose metadata to display.
         separator: The string used to separate metadata entries on
-            each line. Defaults to ``"·"``.
+            each line. Defaults to ``"•"``.
         console: An optional rich :class:`~rich.console.Console` to
             print to. If ``None``, the current active console (as
             returned by :func:`rich.get_console`) is used.

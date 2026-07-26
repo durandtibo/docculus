@@ -19,7 +19,7 @@ def assign_ids(docs: list[Document], *, force: bool = False) -> list[Document]:
 
     Iterates over ``docs`` and sets :attr:`~langchain_core.documents.Document.id`
     on any document whose ``id`` is ``None``, using
-    :func:`~docculus.transform.hash_document_uuid` to derive a
+    :func:`~docculus.hashing.hash_document_uuid` to derive a
     deterministic UUID from the document's content and metadata.
     Documents that already have an ID are left unchanged unless
     ``force=True``.

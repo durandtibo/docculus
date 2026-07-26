@@ -66,8 +66,9 @@ def persista_available(fn: F) -> F:
         fn: The function to execute.
 
     Returns:
-        A wrapper around ``fn`` if ``persista`` package is installed,
-            otherwise ``None``.
+        A wrapper around ``fn``. Calling the wrapper executes ``fn``
+            and returns its result if ``persista`` is installed,
+            otherwise it returns ``None`` without calling ``fn``.
 
     Example:
         ```pycon

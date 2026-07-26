@@ -44,7 +44,8 @@ def hash_document_uuid(doc: Document) -> str:
         >>> from langchain_core.documents import Document
         >>> from docculus.hashing import hash_document_uuid
         >>> doc = Document(page_content="Hello", metadata={"source": "cats.txt"})
-        >>> hash_document_uuid(doc)
+        >>> len(hash_document_uuid(doc))
+        36
 
         ```
     """

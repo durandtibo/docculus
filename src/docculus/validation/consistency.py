@@ -56,7 +56,7 @@ def validate_document_consistency(docs: list[Document], *, raise_error: bool = F
         ...     Document(id="1", page_content="A", metadata={"source": "a.txt"}),
         ...     Document(id="1", page_content="A", metadata={"source": "a.txt"}),
         ... ]
-        >>> check_document_consistency(docs)
+        >>> validate_document_consistency(docs)
         True
 
         ```

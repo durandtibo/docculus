@@ -29,7 +29,7 @@ class ApproxContentStats:
     requiring the full corpus to be held in memory at once. Call
     ``to_dict`` at the end to compute the final report.
 
-    Unlike ``ExactDocContentStats``, memory usage here is fixed (O(1)
+    Unlike ``ExactContentStats``, memory usage here is fixed (O(1)
     per document, i.e. does not grow with the number of documents
     processed): duplicate detection uses a ``BloomFilter`` sized up
     front from an expected document count, and percentiles are
@@ -297,7 +297,7 @@ def compute_content_stats_approx(
     filter) and APPROXIMATE percentiles (via reservoir sampling).
     Documents are consumed one at a time, so this works with iterators
     or generators whose full contents cannot fit in memory. Unlike
-    ``compute_doc_content_stats_exact``, memory usage here does not
+    ``compute_content_stats_exact``, memory usage here does not
     grow with the number of documents processed, only with the
     configured ``expected_doc_count``, ``fp_rate``, and
     ``reservoir_size`` — making this the appropriate choice for corpora
@@ -329,7 +329,7 @@ def compute_content_stats_approx(
 
     Returns:
         A dict of statistics as described in
-        ``ApproxDocContentStats.to_dict``. For an empty input, returns
+        ``ApproxContentStats.to_dict``. For an empty input, returns
         a report with ``count`` of ``0`` and ``None``/``0`` values for
         the length-based fields.
 
@@ -348,7 +348,7 @@ def compute_content_stats_approx(
         ```
 
     See Also:
-        ``compute_doc_content_stats_exact``: an exact variant using a
+        ``compute_content_stats_exact``: an exact variant using a
         hash set for duplicate detection and a full sorted list of
         lengths for percentiles, with memory usage that grows with
         corpus size but produces exact (non-approximate) results.
