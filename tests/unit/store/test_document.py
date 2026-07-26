@@ -193,7 +193,7 @@ def test_set_many_single_mode_stores_metadata_nested(raw_store_cls: type[BaseSto
         store.set_many([Document(id="1", page_content="hello", metadata={"author": "Alice"})])
         assert raw_store.get("1") == {
             "page_content": "hello",
-            "metadata": {"author": "Alice"},
+            "metadata": '{"author": "Alice"}',
         }
 
 
