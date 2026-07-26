@@ -24,7 +24,8 @@ class MetadataStats:
 
     Note:
         ``page_content`` is intentionally not inspected here (see
-        ``compute_doc_content_stats`` for content statistics).
+        ``compute_content_stats_exact`` / ``compute_content_stats_approx``
+        for content statistics).
 
     Note:
         Once a key's sample of unique values has reached
@@ -217,7 +218,7 @@ def compute_metadata_stats(
     of Documents. Documents are consumed one at a time, so this works
     with iterators or generators whose full contents cannot fit in
     memory — only per-key aggregates are retained (see
-    ``DocMetadataStats`` for the memory profile).
+    ``MetadataStats`` for the memory profile).
 
     Args:
         documents: A list, generator, or other iterable of
@@ -233,7 +234,7 @@ def compute_metadata_stats(
 
     Returns:
         A dict of statistics as described in
-        ``DocMetadataStats.to_dict``. For an empty input, returns a
+        ``MetadataStats.to_dict``. For an empty input, returns a
         report with ``count`` of ``0`` and ``None``/``0``/empty values
         for the remaining fields.
 

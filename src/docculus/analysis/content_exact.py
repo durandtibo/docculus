@@ -244,7 +244,7 @@ def compute_content_stats_exact(documents: Iterable[Document]) -> dict[str, Any]
     Documents are consumed one at a time, so this works with iterators
     or generators whose full contents cannot fit in memory — only the
     per-document lengths and content hashes are retained (see
-    ``ExactDocContentStats`` for the memory profile).
+    ``ExactContentStats`` for the memory profile).
 
     Args:
         documents: A list, generator, or other iterable of
@@ -254,7 +254,7 @@ def compute_content_stats_exact(documents: Iterable[Document]) -> dict[str, Any]
 
     Returns:
         A dict of statistics as described in
-        ``ExactDocContentStats.to_dict``. For an empty input, returns a
+        ``ExactContentStats.to_dict``. For an empty input, returns a
         report with ``count`` of ``0`` and ``None``/``0`` values for
         the length-based fields.
 
@@ -273,7 +273,7 @@ def compute_content_stats_exact(documents: Iterable[Document]) -> dict[str, Any]
         ```
 
     See Also:
-        ``compute_doc_stats_approx``: an approximate variant using a
+        ``compute_content_stats_approx``: an approximate variant using a
         Bloom filter for duplicate detection and reservoir sampling for
         percentiles, with fixed (O(1)) memory usage, better suited to
         corpora too large for the exact hash set and length list to fit

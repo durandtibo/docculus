@@ -105,8 +105,8 @@ def _build_stats_table(
 
     Args:
         stats: The full analysis report dict (as returned by
-            ``compute_doc_content_stats_exact`` or
-            ``compute_doc_content_stats_approx``).
+            ``compute_content_stats_exact`` or
+            ``compute_content_stats_approx``).
         is_exact: Whether the report used exact (``True``) or
             approximate (``False``) computation. Controls the section
             header suffix (``" (est.)"`` for approximate) and the
@@ -309,11 +309,11 @@ def print_content_stats_report(
     console: Console | None = None,
 ) -> None:
     """Render a document-content-analysis report (from
-    ``compute_doc_content_stats_exact`` or
-    ``compute_doc_content_stats_approx``) as a single wide table, with
-    one row per metric, followed by a schematic length-distribution bar
-    chart, in the terminal. The panel shrinks to fit its content rather
-    than stretching to the full terminal width.
+    ``compute_content_stats_exact`` or ``compute_content_stats_approx``)
+    as a single wide table, with one row per metric, followed by a
+    schematic length-distribution bar chart, in the terminal. The panel
+    shrinks to fit its content rather than stretching to the full
+    terminal width.
 
     Automatically detects whether the report is exact or approximate
     (via the ``duplicate_count_exact`` / ``percentiles_exact`` keys) and
@@ -330,8 +330,8 @@ def print_content_stats_report(
     ``_build_approx_footnote_items`` (approximate-report caveat).
 
     Args:
-        stats: The dict returned by ``compute_doc_content_stats_exact``
-            or ``compute_doc_content_stats_approx``. Expected to
+        stats: The dict returned by ``compute_content_stats_exact``
+            or ``compute_content_stats_approx``. Expected to
             contain (at minimum) a ``count`` key; all other keys are
             read defensively via ``.get(...)`` with sensible defaults,
             so a partial dict will not raise but may render blanks.

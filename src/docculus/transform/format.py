@@ -117,53 +117,53 @@ def format_documents_as_json(documents: list[Document], include_metadata: bool =
     """Concatenate a list of LangChain documents into a single LLM-
     friendly JSON string.
 
-        Each document is rendered as an object with an ``id`` field and a
-        ``content`` field. When ``include_metadata`` is ``True``, a
-        ``metadata`` field (a JSON object, keys sorted alphabetically) is
-        also included.
+    Each document is rendered as an object with an ``id`` field and a
+    ``content`` field. When ``include_metadata`` is ``True``, a
+    ``metadata`` field (a JSON object, keys sorted alphabetically) is
+    also included.
 
     Args:
-            documents: The documents to concatenate.
-            include_metadata: If ``True``, include each document's metadata
-                as a nested object. Defaults to ``False``.
+        documents: The documents to concatenate.
+        include_metadata: If ``True``, include each document's metadata
+            as a nested object. Defaults to ``False``.
 
     Returns:
-            A JSON array (as a string) with one object per document, in the
-            same order as ``documents``. Returns ``"[]"`` if ``documents`` is
-            empty.
+        A JSON array (as a string) with one object per document, in the
+        same order as ``documents``. Returns ``"[]"`` if ``documents`` is
+        empty.
 
     Example:
-    ```pycon
-    >>> from langchain_core.documents import Document
-    >>> from docculus.transform import format_documents_as_json
-    >>> docs = [
-    ...     Document(
-    ...         page_content="The cat sat on the mat.",
-    ...         metadata={"source": "story.txt", "author": "Alice"},
-    ...     ),
-    ... ]
-    >>> print(format_documents_as_json(docs))
-    [
-      {
-        "id": 1,
-        "content": "The cat sat on the mat."
-      }
-    ]
-    >>> print(format_documents_as_json(docs, include_metadata=True))
-    [
-      {
-        "id": 1,
-        "metadata": {
-          "author": "Alice",
-          "source": "story.txt"
-        },
-        "content": "The cat sat on the mat."
-      }
-    ]
-    >>> format_documents_as_json([])
-    '[]'
+        ```pycon
+        >>> from langchain_core.documents import Document
+        >>> from docculus.transform import format_documents_as_json
+        >>> docs = [
+        ...     Document(
+        ...         page_content="The cat sat on the mat.",
+        ...         metadata={"source": "story.txt", "author": "Alice"},
+        ...     ),
+        ... ]
+        >>> print(format_documents_as_json(docs))
+        [
+          {
+            "id": 1,
+            "content": "The cat sat on the mat."
+          }
+        ]
+        >>> print(format_documents_as_json(docs, include_metadata=True))
+        [
+          {
+            "id": 1,
+            "metadata": {
+              "author": "Alice",
+              "source": "story.txt"
+            },
+            "content": "The cat sat on the mat."
+          }
+        ]
+        >>> format_documents_as_json([])
+        '[]'
 
-    ```
+        ```
     """
     entries = []
     for i, doc in enumerate(documents, start=1):
