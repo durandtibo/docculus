@@ -183,7 +183,7 @@ def test_set_many_flat_mode_stores_metadata_top_level(raw_store_cls: type[BaseSt
     raw_store = _new_raw_store(raw_store_cls)
     with DocumentStore(raw_store, metadata_mode="flat") as store:
         store.set_many([Document(id="1", page_content="hello", metadata={"author": "Alice"})])
-        assert raw_store.get("1") == {"id": "1", "page_content": "hello", "author": "Alice"}
+        assert raw_store.get("1") == {"page_content": "hello", "author": "Alice"}
 
 
 @persista_available
@@ -192,7 +192,6 @@ def test_set_many_single_mode_stores_metadata_nested(raw_store_cls: type[BaseSto
     with DocumentStore(raw_store, metadata_mode="single") as store:
         store.set_many([Document(id="1", page_content="hello", metadata={"author": "Alice"})])
         assert raw_store.get("1") == {
-            "id": "1",
             "page_content": "hello",
             "metadata": {"author": "Alice"},
         }
