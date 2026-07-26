@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 
 MetadataMode = Literal["single", "flat"]
 
-_ID_KEY = "id"
 _CONTENT_KEY = "page_content"
 _METADATA_KEY = "metadata"
 
@@ -30,15 +29,14 @@ class DocumentStore(BaseDocumentStore):
     :class:`persista.store.BaseStore`.
 
     Documents are keyed by their ``id`` in the underlying key-value
-    store. ``metadata_mode`` controls how a document's metadata is
+    store, so the ``id`` itself is not duplicated in the stored
+    value. ``metadata_mode`` controls how a document's metadata is
     represented in the stored value:
 
     - ``"single"``: the metadata dict is stored as a single nested
       value under the ``"metadata"`` key.
     - ``"flat"``: each metadata field is stored as its own top-level
-      key in the stored value, alongside ``"page_content"``. This
-      allows :meth:`filter` to be delegated to the underlying store's
-      own ``filter`` method instead of being done client-side.
+      key in the stored value, alongside ``"page_content"``.
 
     Args:
         store: The underlying key-value store.
@@ -70,18 +68,15 @@ class DocumentStore(BaseDocumentStore):
         return doc.id
 
     def _to_value(self, doc: Document) -> dict[str, Any]:
-        doc_id = self._require_id(doc)
         if self._metadata_mode == "single":
             return {
-                _ID_KEY: doc_id,
                 _CONTENT_KEY: doc.page_content,
                 _METADATA_KEY: dict(doc.metadata),
             }
-        return {_ID_KEY: doc_id, _CONTENT_KEY: doc.page_content, **doc.metadata}
+        return {_CONTENT_KEY: doc.page_content, **doc.metadata}
 
-    def _from_value(self, value: dict[str, Any]) -> Document:
+    def _from_value(self, doc_id: str, value: dict[str, Any]) -> Document:
         value = dict(value)
-        doc_id = value.pop(_ID_KEY)
         content = value.pop(_CONTENT_KEY, "")
         metadata = value.pop(_METADATA_KEY, {}) if self._metadata_mode == "single" else value
         return Document(id=doc_id, page_content=content, metadata=metadata)
@@ -98,43 +93,41 @@ class DocumentStore(BaseDocumentStore):
 
     def get(self, doc_id: str) -> Document | None:
         value = self._store.get(doc_id)
-        return self._from_value(value) if value is not None else None
+        return self._from_value(doc_id, value) if value is not None else None
 
     async def aget(self, doc_id: str) -> Document | None:
         value = await self._store.aget(doc_id)
-        return self._from_value(value) if value is not None else None
+        return self._from_value(doc_id, value) if value is not None else None
 
     def get_many(self, doc_ids: list[str]) -> list[Document | None]:
         return [
-            self._from_value(value) if value is not None else None
-            for value in self._store.get_many(doc_ids)
+            self._from_value(doc_id, value) if value is not None else None
+            for doc_id, value in zip(doc_ids, self._store.get_many(doc_ids), strict=True)
         ]
 
     async def aget_many(self, doc_ids: list[str]) -> list[Document | None]:
         return [
-            self._from_value(value) if value is not None else None
-            for value in await self._store.aget_many(doc_ids)
+            self._from_value(doc_id, value) if value is not None else None
+            for doc_id, value in zip(doc_ids, await self._store.aget_many(doc_ids), strict=True)
         ]
 
     def filter(self, **metadata_filters: Any) -> list[Document]:
-        if self._metadata_mode == "flat":
-            return [self._from_value(value) for value in self._store.filter(**metadata_filters)]
-        return [
-            doc
-            for doc in (self._from_value(value) for value in self._store.filter())
-            if all(doc.metadata.get(key) == val for key, val in metadata_filters.items())
-        ]
+        docs = []
+        for batch in self._store.iter_batches():
+            for doc_id, value in batch.items():
+                doc = self._from_value(doc_id, value)
+                if all(doc.metadata.get(key) == val for key, val in metadata_filters.items()):
+                    docs.append(doc)
+        return docs
 
     async def afilter(self, **metadata_filters: Any) -> list[Document]:
-        if self._metadata_mode == "flat":
-            return [
-                self._from_value(value) for value in await self._store.afilter(**metadata_filters)
-            ]
-        return [
-            doc
-            for doc in (self._from_value(value) for value in await self._store.afilter())
-            if all(doc.metadata.get(key) == val for key, val in metadata_filters.items())
-        ]
+        docs = []
+        async for batch in self._store.aiter_batches():
+            for doc_id, value in batch.items():
+                doc = self._from_value(doc_id, value)
+                if all(doc.metadata.get(key) == val for key, val in metadata_filters.items()):
+                    docs.append(doc)
+        return docs
 
     def delete(self, doc_id: str) -> None:
         self._store.delete(doc_id)
@@ -175,11 +168,11 @@ class DocumentStore(BaseDocumentStore):
 
     def iter_batches(self, batch_size: int = 32) -> Generator[list[Document], None, None]:
         for batch in self._store.iter_batches(batch_size=batch_size):
-            yield [self._from_value(value) for value in batch.values()]
+            yield [self._from_value(doc_id, value) for doc_id, value in batch.items()]
 
     async def aiter_batches(self, batch_size: int = 32) -> AsyncIterator[list[Document]]:
         async for batch in self._store.aiter_batches(batch_size=batch_size):
-            yield [self._from_value(value) for value in batch.values()]
+            yield [self._from_value(doc_id, value) for doc_id, value in batch.items()]
 
     def count(self) -> int:
         return self._store.count()
