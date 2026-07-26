@@ -203,10 +203,26 @@ def test_set_many_single_mode_stores_metadata_nested(raw_store_cls: type[BaseSto
 @persista_available
 def test_get_existing_document(store: DocumentStore, docs: list[Document]) -> None:
     store.set_many(docs)
-    result = store.get("1")
-    assert result.id == "1"
-    assert result.page_content == docs[0].page_content
-    assert result.metadata == docs[0].metadata
+    assert store.get("1") == Document(
+        id="1",
+        page_content="Intro to Python",
+        metadata={"author": "Alice", "category": "Programming"},
+    )
+    assert store.get("2") == Document(
+        id="2",
+        page_content="Advanced Python",
+        metadata={"author": "Alice", "category": "Programming"},
+    )
+    assert store.get("3") == Document(
+        id="3",
+        page_content="History of Rome",
+        metadata={"author": "Bob", "category": "History"},
+    )
+    assert store.get("4") == Document(
+        id="4",
+        page_content="History of Greece",
+        metadata={"author": "Bob", "category": "History"},
+    )
 
 
 @persista_available
