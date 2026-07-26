@@ -1,0 +1,31 @@
+name: Cyclic Imports
+on:
+  workflow_call:
+  workflow_dispatch:  # to trigger manually
+
+permissions:
+  contents: read
+
+jobs:
+  cyclic-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup python environment
+        uses: durandtibo/setup-venv-uv-action@v0.0.4
+
+      - name: check docculus
+        run: |
+          python -c "import docculus"
+
+      - name: check docculus.display
+        run: |
+          python -c "from docculus import display"
+
+      - name: check docculus.utils
+        run: |
+          python -c "from docculus import utils"
+          python -c "from docculus.utils import imports"
