@@ -12,7 +12,7 @@ only-include = ["src"]
 
 [project]
 name = "docculus"
-version = "0.0.1a1"
+version = "0.0.1a2"
 description = "library for LangChain documents"
 readme = "README.md"
 authors = [
