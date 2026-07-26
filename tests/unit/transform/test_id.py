@@ -125,6 +125,53 @@ def test_assign_ids_single_doc_with_id() -> None:
     assert doc.id == "my-id"
 
 
+# --- mode parameter ---
+
+
+def test_assign_ids_default_mode_is_deterministic() -> None:
+    doc = Document(page_content="Hello", metadata={"source": "cats.txt"})
+    assign_ids([doc])
+    first_id = doc.id
+    doc.id = None
+    assign_ids([doc])
+    assert doc.id == first_id
+
+
+def test_assign_ids_mode_deterministic_same_doc_same_id() -> None:
+    doc = Document(page_content="Hello", metadata={"source": "cats.txt"})
+    assign_ids([doc], mode="deterministic")
+    first_id = doc.id
+    doc.id = None
+    assign_ids([doc], mode="deterministic")
+    assert doc.id == first_id
+
+
+def test_assign_ids_mode_random_sets_id(docs: list[Document]) -> None:
+    assign_ids(docs, mode="random")
+    assert all(doc.id is not None for doc in docs)
+
+
+def test_assign_ids_mode_random_different_calls_different_ids() -> None:
+    doc = Document(page_content="Hello", metadata={"source": "cats.txt"})
+    assign_ids([doc], mode="random")
+    first_id = doc.id
+    doc.id = None
+    assign_ids([doc], mode="random")
+    assert doc.id != first_id
+
+
+def test_assign_ids_mode_random_force_overwrites_existing_id() -> None:
+    doc = Document(page_content="Hello", id="existing-id")
+    assign_ids([doc], mode="random", force=True)
+    assert doc.id != "existing-id"
+
+
+def test_assign_ids_invalid_mode_raises() -> None:
+    doc = Document(page_content="Hello")
+    with pytest.raises(ValueError, match="Invalid mode"):
+        assign_ids([doc], mode="invalid")
+
+
 ##########################################
 #   Tests for copy_ids_to_metadata       #
 ##########################################
