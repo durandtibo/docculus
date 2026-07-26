@@ -5,6 +5,7 @@ from __future__ import annotations
 
 __all__ = ["DocumentStore", "MetadataMode"]
 
+import json
 from typing import TYPE_CHECKING, Any, Literal
 
 from langchain_core.documents import Document
@@ -16,7 +17,6 @@ if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Generator, Iterator
 
     from persista.store import BaseStore
-
 
 MetadataMode = Literal["single", "flat"]
 
@@ -71,14 +71,18 @@ class DocumentStore(BaseDocumentStore):
         if self._metadata_mode == "single":
             return {
                 _CONTENT_KEY: doc.page_content,
-                _METADATA_KEY: dict(doc.metadata),
+                _METADATA_KEY: json.dumps(doc.metadata),
             }
         return {_CONTENT_KEY: doc.page_content, **doc.metadata}
 
     def _from_value(self, doc_id: str, value: dict[str, Any]) -> Document:
         value = dict(value)
         content = value.pop(_CONTENT_KEY, "")
-        metadata = value.pop(_METADATA_KEY, {}) if self._metadata_mode == "single" else value
+        if self._metadata_mode == "single":
+            metadata = value.pop(_METADATA_KEY, None) or "{}"
+            metadata = json.loads(metadata) if isinstance(metadata, str) else metadata
+        else:
+            metadata = value
         return Document(id=doc_id, page_content=content, metadata=metadata)
 
     def set_many(self, docs: list[Document]) -> None:
