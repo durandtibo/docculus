@@ -8,7 +8,7 @@ from langchain_core.documents import Document
 from docculus.testing.fixtures import faker_available
 from docculus.utils.fake import generate_fake_documents
 
-MODULE = "docculus.documents.fake"
+MODULE = "docculus.utils.fake"
 
 #############################################
 #     Tests for generate_fake_documents     #
