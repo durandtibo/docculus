@@ -13,13 +13,14 @@ __all__ = [
 
 from typing import TYPE_CHECKING, Any
 
-from persista.store import InMemoryStore, TypedDuckDBStore, TypedSQLiteStore
-
 from docculus.store.document import _CONTENT_KEY, _METADATA_KEY, DocumentStore
-from docculus.utils.imports import check_persista
+from docculus.utils.imports import check_persista, is_persista_available
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+if is_persista_available():  # pragma: no cover
+    from persista.store import InMemoryStore, TypedDuckDBStore, TypedSQLiteStore
 
 
 class DuckDBDocumentStore(DocumentStore):
