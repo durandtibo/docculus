@@ -74,6 +74,7 @@ def sort_by_metadata(
 
     if not keep_missing:
         docs = [doc for doc in docs if metadata_key in doc.metadata]
+        return sorted(docs, key=sort_key, reverse=reverse)
 
     present = [doc for doc in docs if metadata_key in doc.metadata]
     missing = [doc for doc in docs if metadata_key not in doc.metadata]

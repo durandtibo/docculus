@@ -68,7 +68,7 @@ def generate_fake_documents(
 
     Example:
         ```pycon
-        >>> from docculus.documents.fake import generate_fake_documents
+        >>> from docculus.utils.fake import generate_fake_documents
         >>> docs = generate_fake_documents(n=3, seed=42)
         >>> len(docs)
         3

@@ -75,3 +75,12 @@ def test_find_duplicate_content_document_ids_generator_input() -> None:
         yield Document(id="b", page_content="hello", metadata={})
 
     assert find_duplicate_content_document_ids(gen()) == [["a", "b"]]
+
+
+def test_find_duplicate_content_document_ids_non_str_content() -> None:
+    doc_a = Document(id="a", page_content="", metadata={})
+    doc_a.page_content = None
+    doc_b = Document(id="b", page_content="", metadata={})
+    doc_b.page_content = None
+    docs = [doc_a, doc_b, Document(id="c", page_content="hello", metadata={})]
+    assert find_duplicate_content_document_ids(docs) == [["a", "b"]]
