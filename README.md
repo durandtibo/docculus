@@ -56,7 +56,8 @@
 ## Overview
 
 `docculus` is a lightweight Python library that makes it easy to analyze, transform, hash, and
-validate [`langchain_core.documents.Document`](https://python.langchain.com/api_reference/core/documents/langchain_core.documents.base.Document.html)
+validate [
+`langchain_core.documents.Document`](https://python.langchain.com/api_reference/core/documents/langchain_core.documents.base.Document.html)
 objects.
 
 **Quick Links:**
@@ -86,7 +87,6 @@ well-tested API:
 ... ]
 >>> unique_docs = deduplicate_documents(docs)
 >>> print(format_documents(unique_docs, output_format="markdown"))
-...
 
 ```
 
@@ -220,6 +220,12 @@ pip install docculus[all]
 [persista](https://github.com/durandtibo/persista) •
 [rich](https://rich.readthedocs.io/)
 
+### Compatibility Matrix
+
+| `coola` | `coola`         | `langchain-core` | `duckdb`<sup>*</sup> | `faker`<sup>*</sup> | `persista`<sup>*</sup> | `rich`<sup>*</sup> | `python` |
+|---------|-----------------|------------------|----------------------|---------------------|------------------------|--------------------|----------|
+| `main`  | `>=1.1.10,<1.0` | `>=1.4,<2.0`     | `>=1.3,<2.0`         | `>=40.0,<41.0`      | `>=0.0.3,<1.0`         | `>=14.0.0,<16.0`   | `>=3.10` |
+
 ## Contributing
 
 Contributions are welcome! We appreciate bug fixes, feature additions, documentation improvements,
@@ -234,7 +240,8 @@ your changes.
 
 ## API Stability
 
-:warning: **Important**: As `docculus` is under active development, its API is not yet stable and may
+:warning: **Important**: As `docculus` is under active development, its API is not yet stable and
+may
 change between releases. We recommend pinning a specific version in your project’s dependencies to
 ensure consistent behavior.
 
