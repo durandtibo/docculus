@@ -21,9 +21,29 @@ jobs:
         run: |
           python -c "import docculus"
 
+      - name: check docculus.analysis
+        run: |
+          python -c "from docculus import analysis"
+
       - name: check docculus.display
         run: |
           python -c "from docculus import display"
+
+      - name: check docculus.document
+        run: |
+          python -c "from docculus import document"
+
+      - name: check docculus.hashing
+        run: |
+          python -c "from docculus import hashing"
+
+      - name: check docculus.store
+        run: |
+          python -c "from docculus import store"
+
+      - name: check docculus.transform
+        run: |
+          python -c "from docculus import transform"
 
       - name: check docculus.utils
         run: |
