@@ -3,8 +3,8 @@ duplicate/empty detection, and report printing.
 
 Functions here consume an iterable of documents and never mutate or
 return a new document list. For per-document predicates, see
-``docculus.document``; for functions that produce a new document
-list (dedup, filter, sort, format), see ``docculus.transform``.
+``docculus.document``; for functions that produce a new document list
+(dedup, filter, sort, format), see ``docculus.transform``.
 """
 
 from __future__ import annotations
