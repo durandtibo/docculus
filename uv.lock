@@ -500,7 +500,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219", size = 30371, upload-time = "2025-11-21T23:01:54.787Z" }
 wheels = [
@@ -1182,15 +1182,15 @@ wheels = [
 
 [[package]]
 name = "persista"
-version = "0.0.3a5"
+version = "0.0.3a6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coola" },
     { name = "iden" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fa/82/557b808a9c0131a3623cf0d71442aca4924af355e5e53d2d69aa6b044576/persista-0.0.3a5.tar.gz", hash = "sha256:78edd05f98d972bf4bb7c5003a49141d5f2ef73172d4ae09c0c095b37868ebd1", size = 67048, upload-time = "2026-07-26T19:50:54.778Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/03/153d2078c237d50ad8b52b1ea1e9c959b9bc11207c2ff5cb6760eb4e17dc/persista-0.0.3a6.tar.gz", hash = "sha256:655f5d295e45098531e4e94d3f080433d621077db62941cf57984e770a3c16c0", size = 67244, upload-time = "2026-07-27T02:05:28.895Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/52/b6/99190e48bc4334b78143bf756f1b43b8027651f6b9125705152f83a80161/persista-0.0.3a5-py3-none-any.whl", hash = "sha256:deb85a9b96964903ed98b946817505916b9b6c1175ed19b247ca0c30c35ef4da", size = 100279, upload-time = "2026-07-26T19:50:53.659Z" },
+    { url = "https://files.pythonhosted.org/packages/be/c7/c323daca818c4e422b9d937d5bc83fedb707b30722a5f6fdcea7dce71481/persista-0.0.3a6-py3-none-any.whl", hash = "sha256:ea035abde75e91a5aa2eb17822a74c92234d5d70963d73c0329983ac07c9f7d8", size = 100545, upload-time = "2026-07-27T02:05:27.66Z" },
 ]
 
 [[package]]
