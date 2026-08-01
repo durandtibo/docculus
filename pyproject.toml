@@ -12,8 +12,8 @@ only-include = ["src"]
 
 [project]
 name = "docculus"
-version = "0.0.1a2"
-description = "library for LangChain documents"
+version = "0.0.1"
+description = "Library for LangChain documents"
 readme = "README.md"
 authors = [
     { name = "Thibaut Durand", email = "durand.tibo+gh@gmail.com" },
