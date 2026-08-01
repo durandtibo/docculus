@@ -87,6 +87,17 @@ well-tested API:
 ... ]
 >>> unique_docs = deduplicate_documents(docs)
 >>> print(format_documents(unique_docs, output_format="markdown"))
+## Document 1
+<BLANKLINE>
+The cat sat on the mat.
+<BLANKLINE>
+## Document 2
+<BLANKLINE>
+The cat sat on the mat.
+<BLANKLINE>
+## Document 3
+<BLANKLINE>
+The dog chased the ball.
 
 ```
 
@@ -105,6 +116,7 @@ well-tested API:
 ```pycon
 >>> from docculus.validation import validate_document_consistency
 >>> validate_document_consistency(docs)
+True
 
 ```
 
