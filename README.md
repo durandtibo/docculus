@@ -4,9 +4,6 @@
     <a href="https://github.com/durandtibo/docculus/actions/workflows/ci.yaml">
         <img alt="CI" src="https://github.com/durandtibo/docculus/actions/workflows/ci.yaml/badge.svg">
     </a>
-    <a href="https://github.com/durandtibo/docculus/actions/workflows/nightly-tests.yaml">
-        <img alt="Nightly Tests" src="https://github.com/durandtibo/docculus/actions/workflows/nightly-tests.yaml/badge.svg">
-    </a>
     <a href="https://github.com/durandtibo/docculus/actions/workflows/nightly-package.yaml">
         <img alt="Nightly Package Tests" src="https://github.com/durandtibo/docculus/actions/workflows/nightly-package.yaml/badge.svg">
     </a>
@@ -15,10 +12,10 @@
     </a>
     <br/>
     <a href="https://durandtibo.github.io/docculus/">
-        <img alt="Documentation" src="https://github.com/durandtibo/docculus/actions/workflows/docs.yaml/badge.svg">
+        <img alt="Documentation" src="https://github.com/durandtibo/docculus/actions/workflows/release-docs.yaml/badge.svg">
     </a>
     <a href="https://durandtibo.github.io/docculus/dev/">
-        <img alt="Documentation" src="https://github.com/durandtibo/docculus/actions/workflows/docs-dev.yaml/badge.svg">
+        <img alt="Documentation" src="https://github.com/durandtibo/docculus/actions/workflows/release-docs-dev.yaml/badge.svg">
     </a>
     <br/>
     <a href="https://github.com/psf/black">
