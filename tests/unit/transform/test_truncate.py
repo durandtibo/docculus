@@ -53,3 +53,10 @@ def test_truncate_documents_does_not_modify_original_documents() -> None:
     docs = [Document(page_content="hello world")]
     truncate_documents(docs, max_length=5)
     assert docs[0].page_content == "hello world"
+
+
+def test_truncate_documents_does_not_share_metadata() -> None:
+    doc = Document(page_content="hello", metadata={"a": 1})
+    result = truncate_documents([doc], max_length=3)
+    result[0].metadata["b"] = 2
+    assert doc.metadata == {"a": 1}

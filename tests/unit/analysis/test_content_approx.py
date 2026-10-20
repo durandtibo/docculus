@@ -7,6 +7,7 @@ from langchain_core.documents import Document
 from docculus.analysis import (
     ApproxContentStats,
     compute_content_stats_approx,
+    compute_content_stats_exact,
 )
 
 
@@ -420,7 +421,7 @@ def test_approx_content_stats_to_dict_is_idempotent() -> None:
 
 def test_approx_content_stats_accepts_prebuilt_bloom_filter() -> None:
     bloom = BloomFilter(expected_items=10, fp_rate=0.001)
-    stats = ApproxContentStats(_bloom=bloom, reservoir_size=FULL_RESERVOIR)
+    stats = ApproxContentStats(bloom=bloom, reservoir_size=FULL_RESERVOIR)
     stats.update(Document(id="1", page_content="abc", metadata={"source": "x"}))
     stats.update(Document(id="2", page_content="abc", metadata={"source": "x"}))
     assert stats.to_dict() == {
@@ -446,3 +447,33 @@ def test_approx_content_stats_accepts_prebuilt_bloom_filter() -> None:
         "bloom_filter_fp_rate": 0.01,  # note: dataclass default field, NOT bloom's own fp_rate
         "reservoir_sample_size": 2,
     }
+
+
+def test_compute_content_stats_approx_seed_is_reproducible() -> None:
+    docs = [Document(id=str(i), page_content="x" * (i % 97)) for i in range(2000)]
+    first = compute_content_stats_approx(docs, reservoir_size=50, seed=7)
+    second = compute_content_stats_approx(docs, reservoir_size=50, seed=7)
+    assert first == second
+
+
+def test_compute_content_stats_approx_does_not_touch_global_random() -> None:
+    import random
+
+    docs = [Document(id=str(i), page_content="x" * (i % 97)) for i in range(500)]
+    random.seed(123)
+    expected = random.random()  # noqa: S311
+    random.seed(123)
+    compute_content_stats_approx(docs, reservoir_size=10)
+    assert random.random() == expected  # noqa: S311
+
+
+def test_compute_content_stats_approx_std_dev_is_exact_beyond_reservoir() -> None:
+    docs = [Document(id=str(i), page_content="x" * (i % 97)) for i in range(2000)]
+    approx = compute_content_stats_approx(docs, reservoir_size=10, seed=0)
+    exact = compute_content_stats_exact(docs)
+    assert approx["std_dev_chars"] == pytest.approx(exact["std_dev_chars"])
+
+
+def test_approx_content_stats_private_state_not_in_init() -> None:
+    with pytest.raises(TypeError):
+        ApproxContentStats(_reservoir=[1])

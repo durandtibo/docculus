@@ -7,11 +7,13 @@ __all__ = ["sort_by_metadata"]
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from langchain_core.documents import Document
 
 
 def sort_by_metadata(
-    docs: list[Document],
+    docs: Iterable[Document],
     metadata_key: str,
     *,
     keep_missing: bool = True,
@@ -66,8 +68,11 @@ def sort_by_metadata(
 
         ```
     """
-    present = [doc for doc in docs if metadata_key in doc.metadata]
+    present: list[Document] = []
+    missing: list[Document] = []
+    for doc in docs:
+        (present if metadata_key in doc.metadata else missing).append(doc)
     result = sorted(present, key=lambda doc: doc.metadata[metadata_key], reverse=reverse)
     if keep_missing:
-        result += [doc for doc in docs if metadata_key not in doc.metadata]
+        result += missing
     return result

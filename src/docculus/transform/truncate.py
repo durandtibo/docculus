@@ -38,7 +38,8 @@ def truncate_documents(
     Returns:
         A new list of ``Document`` instances with truncated
         ``page_content``, preserving each document's ``id`` and
-        ``metadata``. The input documents are not modified. A document
+        ``metadata`` (copied, so it is not shared with the input). The input
+        documents are not modified. A document
         whose ``page_content`` is not a string (e.g. ``None``) is
         treated as having empty content.
 
@@ -59,5 +60,5 @@ def truncate_documents(
         if len(content) > max_length:
             keep = max(max_length - len(suffix), 0)
             content = content[:keep] + suffix
-        truncated.append(Document(id=doc.id, page_content=content, metadata=doc.metadata))
+        truncated.append(Document(id=doc.id, page_content=content, metadata=dict(doc.metadata)))
     return truncated

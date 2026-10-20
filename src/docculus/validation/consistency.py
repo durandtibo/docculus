@@ -9,6 +9,8 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from langchain_core.documents import Document
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -19,7 +21,7 @@ class DocumentConsistencyError(ValueError):
     ``page_content`` or ``metadata``."""
 
 
-def validate_document_consistency(docs: list[Document], *, raise_error: bool = False) -> bool:
+def validate_document_consistency(docs: Iterable[Document], *, raise_error: bool = False) -> bool:
     """Check that documents sharing the same ``id`` have the same
     ``page_content`` and ``metadata``.
 

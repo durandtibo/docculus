@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator, Generator, Iterator
+    from collections.abc import AsyncIterator, Iterator
     from typing import Self
 
     from langchain_core.documents import Document
@@ -212,6 +212,20 @@ class BaseDocumentStore(ABC):
         for batch in self.iter_batches(batch_size=batch_size):
             yield from batch
 
+    def items(self, batch_size: int = 32) -> Iterator[tuple[str, Document]]:
+        """Lazily iterate over ``(id, document)`` pairs.
+
+        Args:
+            batch_size: The batch size used internally when pulling
+                documents from the underlying store.
+
+        Yields:
+            One ``(doc_id, document)`` tuple at a time, in the same
+            order as :meth:`values`.
+        """
+        for doc in self.values(batch_size=batch_size):
+            yield str(doc.id), doc
+
     async def avalues(self, batch_size: int = 32) -> AsyncIterator[Document]:
         """Async equivalent of :meth:`values`.
 
@@ -228,7 +242,7 @@ class BaseDocumentStore(ABC):
                 yield doc
 
     @abstractmethod
-    def iter_batches(self, batch_size: int = 32) -> Generator[list[Document]]:
+    def iter_batches(self, batch_size: int = 32) -> Iterator[list[Document]]:
         """Yield documents in batches, avoiding loading the whole store
         into memory at once.
 
@@ -319,6 +333,9 @@ class BaseDocumentStore(ABC):
             ``True`` if the store has been closed, ``False`` if it is
             open and ready to use.
         """
+
+    def __contains__(self, doc_id: object) -> bool:
+        return isinstance(doc_id, str) and self.contains(doc_id)
 
     def __enter__(self) -> Self:
         self.open()

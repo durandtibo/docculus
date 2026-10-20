@@ -47,6 +47,7 @@ def _truncate(content: str, max_length: int) -> tuple[str, bool]:
 def print_document(
     doc: Document,
     max_length: int = 500,
+    *,
     console: Console | None = None,
     compact_metadata: bool = False,
 ) -> None:

@@ -10,12 +10,14 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from langchain_core.documents import Document
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def deduplicate_documents(docs: list[Document], log: bool = False) -> list[Document]:
+def deduplicate_documents(docs: Iterable[Document], *, log: bool = False) -> list[Document]:
     """Remove duplicate documents from a list.
 
     Two documents are considered duplicates only if their ``id``,
@@ -53,7 +55,9 @@ def deduplicate_documents(docs: list[Document], log: bool = False) -> list[Docum
     """
     seen: set[tuple[str | None, str, str]] = set()
     result: list[Document] = []
+    total = 0
     for doc in docs:
+        total += 1
         key = (doc.id, doc.page_content, json.dumps(doc.metadata, sort_keys=True))
         if key in seen:
             continue
@@ -62,8 +66,8 @@ def deduplicate_documents(docs: list[Document], log: bool = False) -> list[Docum
     if log:
         logger.info(
             "Deduplicated documents: %d -> %d (%d duplicate(s) removed)",
-            len(docs),
+            total,
             len(result),
-            len(docs) - len(result),
+            total - len(result),
         )
     return result

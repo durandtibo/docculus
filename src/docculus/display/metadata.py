@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 def print_documents_metadata(
     documents: Sequence[Document],
+    *,
     separator: str = "•",
     console: Console | None = None,
 ) -> None:

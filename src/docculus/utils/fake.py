@@ -19,6 +19,7 @@ __all__ = ["generate_fake_documents"]
 
 def generate_fake_documents(
     n: int = 5,
+    *,
     seed: int | None = None,
     nb_sentences: int = 5,
 ) -> list[Document]:

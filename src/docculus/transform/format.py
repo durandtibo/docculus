@@ -4,6 +4,7 @@ strings."""
 from __future__ import annotations
 
 __all__ = [
+    "OutputFormat",
     "format_documents",
     "format_documents_as_json",
     "format_documents_as_markdown",
@@ -11,19 +12,44 @@ __all__ = [
 ]
 
 import json
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
+from xml.sax.saxutils import escape as xml_escape, quoteattr
+
+OutputFormat = Literal["xml", "markdown", "json"]
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
 
     from langchain_core.documents import Document
 
 
+def _label(index: int, doc: Document, use_doc_ids: bool) -> str:
+    """Return the label shown for a document: its 1-based position, or
+    its ``id`` when ``use_doc_ids`` is ``True`` and the id is set."""
+    if use_doc_ids and doc.id is not None:
+        return str(doc.id)
+    return str(index)
+
+
+def _format_metadata_value(value: Any) -> str:
+    """Render a metadata value as text.
+
+    Lists, tuples and dicts are rendered as JSON; other values with
+    :func:`str`.
+    """
+    if isinstance(value, (list, tuple, dict)):
+        return json.dumps(value, sort_keys=True, ensure_ascii=False, default=str)
+    return str(value)
+
+
 def _build_blocks(
-    documents: list[Document],
+    documents: Iterable[Document],
+    *,
     include_metadata: bool,
-    header_fn: Callable[[int, str], str],
-    metadata_line_fn: Callable[[Any, Any], str],
+    use_doc_ids: bool,
+    header_fn: Callable[[str, str], str],
+    metadata_line_fn: Callable[[str, str], str],
+    escape_fn: Callable[[str], str] = str,
 ) -> str:
     """Build the shared per-document block structure used by both the
     Markdown and XML formatters.
@@ -32,10 +58,14 @@ def _build_blocks(
         documents: The documents to concatenate.
         include_metadata: If ``True``, include each document's metadata
             above its content.
-        header_fn: A callable ``(index, body) -> str`` that wraps a
+        use_doc_ids: If ``True``, label documents with their ``id``
+            (falling back to the position when the id is ``None``).
+        header_fn: A callable ``(label, body) -> str`` that wraps a
             document's body in the format-specific header/delimiter.
         metadata_line_fn: A callable ``(key, value) -> str`` that renders
             a single metadata entry in the format-specific style.
+        escape_fn: A callable applied to content, metadata keys and
+            metadata values before they are inserted.
 
     Returns:
         A single string with one block per document, in the same order as
@@ -46,19 +76,24 @@ def _build_blocks(
         parts = []
         if include_metadata and doc.metadata:
             metadata_lines = "\n".join(
-                metadata_line_fn(key, doc.metadata[key]) for key in sorted(doc.metadata)
+                metadata_line_fn(
+                    escape_fn(str(key)), escape_fn(_format_metadata_value(doc.metadata[key]))
+                )
+                for key in sorted(doc.metadata)
             )
             parts.append(metadata_lines)
-        parts.append(doc.page_content)
+        parts.append(escape_fn(doc.page_content))
         body = "\n\n".join(parts)
-        blocks.append(header_fn(i, body))
+        blocks.append(header_fn(_label(i, doc, use_doc_ids), body))
     return "\n\n".join(blocks)
 
 
 def format_documents(
-    documents: list[Document],
+    documents: Iterable[Document],
+    *,
     include_metadata: bool = False,
-    output_format: str = "xml",
+    output_format: OutputFormat = "xml",
+    use_doc_ids: bool = False,
 ) -> str:
     """Concatenate a list of LangChain documents into a single LLM-
     friendly string, in XML, Markdown, or JSON format.
@@ -75,6 +110,9 @@ def format_documents(
             ``False``.
         output_format: One of ``"xml"``, ``"markdown"``, or ``"json"``.
             Defaults to ``"xml"``.
+        use_doc_ids: If ``True``, label each document with its ``id``
+            instead of its 1-based position. Documents without an
+            ``id`` keep their position. Defaults to ``False``.
 
     Returns:
         A single string with one document block per document, in the same
@@ -104,16 +142,29 @@ def format_documents(
         ```
     """
     if output_format == "xml":
-        return format_documents_as_xml(documents, include_metadata=include_metadata)
+        return format_documents_as_xml(
+            documents, include_metadata=include_metadata, use_doc_ids=use_doc_ids
+        )
     if output_format == "markdown":
-        return format_documents_as_markdown(documents, include_metadata=include_metadata)
+        return format_documents_as_markdown(
+            documents, include_metadata=include_metadata, use_doc_ids=use_doc_ids
+        )
     if output_format == "json":
-        return format_documents_as_json(documents, include_metadata=include_metadata)
+        return format_documents_as_json(
+            documents, include_metadata=include_metadata, use_doc_ids=use_doc_ids
+        )
     msg = f"Unknown format: {output_format}"
     raise ValueError(msg)
 
 
-def format_documents_as_json(documents: list[Document], include_metadata: bool = False) -> str:
+def format_documents_as_json(
+    documents: Iterable[Document],
+    *,
+    include_metadata: bool = False,
+    use_doc_ids: bool = False,
+    indent: int | None = 2,
+    ensure_ascii: bool = False,
+) -> str:
     """Concatenate a list of LangChain documents into a single LLM-
     friendly JSON string.
 
@@ -126,6 +177,13 @@ def format_documents_as_json(documents: list[Document], include_metadata: bool =
         documents: The documents to concatenate.
         include_metadata: If ``True``, include each document's metadata
             as a nested object. Defaults to ``False``.
+        use_doc_ids: If ``True``, label each document with its ``id``
+            instead of its 1-based position. Documents without an
+            ``id`` keep their position. Defaults to ``False``.
+        indent: Indentation passed to :func:`json.dumps`. ``None``
+            produces compact output. Defaults to ``2``.
+        ensure_ascii: Passed to :func:`json.dumps`. Defaults to
+            ``False`` so non-ASCII text is kept readable.
 
     Returns:
         A JSON array (as a string) with one object per document, in the
@@ -167,15 +225,17 @@ def format_documents_as_json(documents: list[Document], include_metadata: bool =
     """
     entries = []
     for i, doc in enumerate(documents, start=1):
-        entry: dict[str, Any] = {"id": i}
+        entry: dict[str, Any] = {"id": _label(i, doc, use_doc_ids) if use_doc_ids else i}
         if include_metadata and doc.metadata:
             entry["metadata"] = dict(sorted(doc.metadata.items()))
         entry["content"] = doc.page_content
         entries.append(entry)
-    return json.dumps(entries, indent=2)
+    return json.dumps(entries, indent=indent, ensure_ascii=ensure_ascii)
 
 
-def format_documents_as_markdown(documents: list[Document], include_metadata: bool = False) -> str:
+def format_documents_as_markdown(
+    documents: Iterable[Document], *, include_metadata: bool = False, use_doc_ids: bool = False
+) -> str:
     """Concatenate a list of LangChain documents into a single LLM-
     friendly Markdown string.
 
@@ -189,6 +249,9 @@ def format_documents_as_markdown(documents: list[Document], include_metadata: bo
         include_metadata: If ``True``, include each document's metadata
             (as a bullet list, sorted by key) above its content. Defaults
             to ``False``.
+        use_doc_ids: If ``True``, label each document with its ``id``
+            instead of its 1-based position. Documents without an
+            ``id`` keep their position. Defaults to ``False``.
 
     Returns:
         A single string with one ``## Document N`` section per document,
@@ -238,15 +301,21 @@ def format_documents_as_markdown(documents: list[Document], include_metadata: bo
     """
     return _build_blocks(
         documents,
-        include_metadata,
-        header_fn=lambda i, body: f"## Document {i}\n\n{body}",
+        include_metadata=include_metadata,
+        use_doc_ids=use_doc_ids,
+        header_fn=lambda label, body: f"## Document {label}\n\n{body}",
         metadata_line_fn=lambda key, value: f"- {key}: {value}",
     )
 
 
-def format_documents_as_xml(documents: list[Document], include_metadata: bool = False) -> str:
+def format_documents_as_xml(
+    documents: Iterable[Document], *, include_metadata: bool = False, use_doc_ids: bool = False
+) -> str:
     """Concatenate a list of LangChain documents into a single LLM-
     friendly XML-tagged string.
+
+    Content, metadata and ids are XML-escaped (``&``, ``<``, ``>``), so
+    document text cannot close or forge a ``<document>`` block.
 
     Each document is rendered as a clearly delimited ``<document>`` block so
     the LLM can distinguish document boundaries. When ``include_metadata``
@@ -258,6 +327,9 @@ def format_documents_as_xml(documents: list[Document], include_metadata: bool = 
         include_metadata: If ``True``, include each document's metadata
             (as ``key: value`` lines, sorted by key) above its content.
             Defaults to ``False``.
+        use_doc_ids: If ``True``, label each document with its ``id``
+            instead of its 1-based position. Documents without an
+            ``id`` keep their position. Defaults to ``False``.
 
     Returns:
         A single string with one ``<document>`` block per document, in the
@@ -307,7 +379,9 @@ def format_documents_as_xml(documents: list[Document], include_metadata: bool = 
     """
     return _build_blocks(
         documents,
-        include_metadata,
-        header_fn=lambda i, body: f'<document id="{i}">\n{body}\n</document>',
+        include_metadata=include_metadata,
+        use_doc_ids=use_doc_ids,
+        header_fn=lambda label, body: f"<document id={quoteattr(label)}>\n{body}\n</document>",
         metadata_line_fn=lambda key, value: f"{key}: {value}",
+        escape_fn=xml_escape,
     )

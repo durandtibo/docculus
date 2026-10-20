@@ -12,9 +12,11 @@ from docculus.document import generate_id
 if TYPE_CHECKING:
     from langchain_core.documents import Document
 
+    from docculus.document.id import IdMode
+
 
 def assign_ids(
-    docs: list[Document], *, mode: str = "deterministic", force: bool = False
+    docs: list[Document], *, mode: IdMode = "deterministic", force: bool = False
 ) -> list[Document]:
     """Assign a unique identifier to each document that does not already
     have one.

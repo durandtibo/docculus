@@ -613,3 +613,18 @@ def test_typed_duckdb_store_rejects_undeclared_metadata_key() -> None:
         pytest.raises(ValueError, match="not declared in metadata_schema"),
     ):
         store.set_many([Document(id="1", page_content="x", metadata={"other": 1})])
+
+
+def test_items_yields_id_document_pairs(store: DocumentStore) -> None:
+    docs = [Document(id=str(i), page_content=f"doc {i}") for i in range(3)]
+    store.set_many(docs)
+    assert sorted(store.items(batch_size=2), key=lambda item: item[0]) == [
+        (doc.id, doc) for doc in docs
+    ]
+
+
+def test_contains_operator(store: DocumentStore) -> None:
+    store.set_many([Document(id="1", page_content="x")])
+    assert "1" in store
+    assert "2" not in store
+    assert 1 not in store

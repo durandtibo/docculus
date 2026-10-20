@@ -4,14 +4,17 @@ from __future__ import annotations
 
 __all__ = ["ApproxContentStats", "compute_content_stats_approx"]
 
-import hashlib
 import random
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from coola.utils.bloom_filter import BloomFilter
 
-from docculus.document import get_length
+from docculus.analysis._content_base import (
+    ContentStatsBase,
+    content_hash,
+    nearest_rank_percentile,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -20,7 +23,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(slots=True)
-class ApproxContentStats:
+class ApproxContentStats(ContentStatsBase):
     """Streaming document health/analysis with APPROXIMATE duplicate
     detection and APPROXIMATE percentiles.
 
@@ -65,6 +68,10 @@ class ApproxContentStats:
         none_id_count: Number of documents whose ``id`` is ``None``.
         missing_metadata_count: Number of documents whose ``metadata``
             is empty or falsy.
+        seed: Optional seed for the private random generator used by
+            the reservoir sampling.
+        bloom: An optional pre-built ``BloomFilter``. If ``None``, one
+            is created from ``expected_doc_count`` and ``fp_rate``.
         approx_duplicate_count: Approximate number of documents whose
             exact ``page_content`` has already been seen earlier in the
             stream, as reported by the Bloom filter. Never
@@ -72,34 +79,27 @@ class ApproxContentStats:
             filter's false-positive rate.
     """
 
-    count: int = 0
-    total_chars: int = 0
-    min_chars: int | None = None
-    max_chars: int | None = None
-    min_doc_id: Any | None = None
-    max_doc_id: Any | None = None
-
-    empty_count: int = 0
-    whitespace_only_count: int = 0
-    none_or_non_str_content_count: int = 0
-    none_id_count: int = 0
-    missing_metadata_count: int = 0
     approx_duplicate_count: int = 0
 
     expected_doc_count: int = 1_000_000
     fp_rate: float = 0.01
     reservoir_size: int = 10_000
+    seed: int | None = None
+    bloom: BloomFilter | None = None
 
-    _bloom: BloomFilter | None = field(default=None, repr=False)
-    _reservoir: list[int] = field(default_factory=list, repr=False)
-    _seen_for_reservoir: int = field(default=0, repr=False)
+    _reservoir: list[int] = field(default_factory=list, init=False, repr=False)
+    _seen_for_reservoir: int = field(default=0, init=False, repr=False)
+    _mean: float = field(default=0.0, init=False, repr=False)
+    _m2: float = field(default=0.0, init=False, repr=False)
+    _rng: random.Random = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        """Lazily construct the Bloom filter from the configured
-        ``expected_doc_count`` and ``fp_rate`` if one wasn't
-        supplied."""
-        if self._bloom is None:
-            self._bloom = BloomFilter(expected_items=self.expected_doc_count, fp_rate=self.fp_rate)
+        """Construct the Bloom filter (if one wasn't supplied) from the
+        configured ``expected_doc_count`` and ``fp_rate``, and the
+        private random generator from ``seed``."""
+        if self.bloom is None:
+            self.bloom = BloomFilter(expected_items=self.expected_doc_count, fp_rate=self.fp_rate)
+        self._rng = random.Random(self.seed)  # noqa: S311
 
     def update(self, doc: Document) -> None:
         """Fold a single document into the running statistics.
@@ -107,7 +107,7 @@ class ApproxContentStats:
         Updates all counters, the min/max character length (with the
         associated document id), the Bloom filter used for approximate
         duplicate detection, and the reservoir sample of lengths used
-        later for approximate percentile and standard deviation
+        later for approximate percentile
         calculations.
 
         Args:
@@ -121,41 +121,18 @@ class ApproxContentStats:
                 be a mapping; a falsy/empty mapping is counted via
                 ``missing_metadata_count``.
         """
-        doc_id = doc.id  # always present per assumption, may be None
-        if doc_id is None:
-            self.none_id_count += 1
+        content, length = self._update_base(doc)
 
-        content = doc.page_content
-        if not isinstance(content, str):
-            self.none_or_non_str_content_count += 1
-            content = ""
-
-        if content == "":
-            self.empty_count += 1
-        elif content.strip() == "":
-            self.whitespace_only_count += 1
-
-        if not doc.metadata:
-            self.missing_metadata_count += 1
-
-        content_hash = hashlib.sha256(content.encode("utf-8", errors="surrogatepass")).digest()
-        assert self._bloom is not None  # noqa: S101 (set in __post_init__)
-        if self._bloom.add_and_check(content_hash):
+        assert self.bloom is not None  # noqa: S101 (set in __post_init__)
+        if self.bloom.add_and_check(content_hash(content)):
             self.approx_duplicate_count += 1
 
-        length = get_length(doc)
-        self.count += 1
-        self.total_chars += length
+        # Welford's online algorithm: exact mean and variance in O(1) memory.
+        delta = length - self._mean
+        self._mean += delta / self.count
+        self._m2 += delta * (length - self._mean)
 
-        self._update_extremes(length, doc_id)
         self._update_reservoir(length)
-
-    def _update_extremes(self, length: int, doc_id: Any) -> None:
-        """Update the min/max character length and associated ids."""
-        if self.min_chars is None or length < self.min_chars:
-            self.min_chars, self.min_doc_id = length, doc_id
-        if self.max_chars is None or length > self.max_chars:
-            self.max_chars, self.max_doc_id = length, doc_id
 
     def _update_reservoir(self, length: int) -> None:
         """Add a length to the reservoir sample."""
@@ -166,41 +143,17 @@ class ApproxContentStats:
         if len(self._reservoir) < self.reservoir_size:
             self._reservoir.append(length)
         else:
-            j = random.randint(0, self._seen_for_reservoir - 1)  # noqa: S311
+            j = self._rng.randint(0, self._seen_for_reservoir - 1)
             if j < self.reservoir_size:
                 self._reservoir[j] = length
-
-    def _percentile(self, sorted_lengths: list[int], p: float) -> float | None:
-        """Estimate a percentile from a pre-sorted sample of lengths.
-
-        Uses nearest-rank interpolation over the reservoir sample: the
-        index into ``sorted_lengths`` is ``round(p / 100 * (n - 1))``.
-        Since the sample is a uniform random subset of all lengths
-        seen, this is an unbiased estimate of the true percentile, with
-        accuracy improving as ``reservoir_size`` grows relative to
-        ``count``.
-
-        Args:
-            sorted_lengths: A sample of document content lengths,
-                sorted in ascending order.
-            p: Percentile to compute, in the range ``[0, 100]``.
-
-        Returns:
-            The estimated length at the requested percentile, or
-            ``None`` if ``sorted_lengths`` is empty.
-        """
-        if not sorted_lengths:
-            return None
-        k = round(p / 100 * (len(sorted_lengths) - 1))
-        return sorted_lengths[k]
 
     def to_dict(self) -> dict[str, Any]:
         """Compute the final statistics report from the accumulated
         state.
 
         Derives the average from the exact running total, and the
-        (population) standard deviation and 50th/90th/99th percentiles
-        of content length from the reservoir sample of lengths. Safe to
+        exact (population) standard deviation, and the 50th/90th/99th
+        percentiles of content length from the reservoir sample. Safe to
         call multiple times and at any point during accumulation; it
         does not mutate any state and always reflects everything
         processed via ``update`` so far.
@@ -213,8 +166,9 @@ class ApproxContentStats:
               (exact).
             - ``avg_chars``: Mean ``page_content`` length (exact), or
               ``0`` if no documents were processed.
-            - ``std_dev_chars``: Standard deviation of ``page_content``
-              length, estimated from the reservoir sample; ``0`` if
+            - ``std_dev_chars``: Population standard deviation of
+              ``page_content`` length (exact, computed online with
+              Welford's algorithm); ``0`` if
               fewer than two documents were processed.
             - ``min_chars`` / ``max_chars``: Shortest/longest
               ``page_content`` length seen (exact), or ``None`` if
@@ -247,20 +201,15 @@ class ApproxContentStats:
               duplicate detection, for reference when interpreting
               ``approx_duplicate_count``.
             - ``reservoir_sample_size``: The number of lengths actually
-              held in the reservoir sample used for the standard
-              deviation and percentile estimates (``min(count,
+              held in the reservoir sample used for the percentile
+              estimates (``min(count,
               reservoir_size)``).
         """
         n = self.count
         avg = self.total_chars / n if n else 0
 
         sample = self._reservoir
-        if len(sample) > 1:
-            sample_mean = sum(sample) / len(sample)
-            variance = sum((length - sample_mean) ** 2 for length in sample) / len(sample)
-            std_dev = variance**0.5
-        else:
-            std_dev = 0.0
+        std_dev = (self._m2 / n) ** 0.5 if n > 1 else 0.0
 
         sorted_sample = sorted(sample)
 
@@ -273,9 +222,9 @@ class ApproxContentStats:
             "max_chars": self.max_chars,
             "min_doc_id": self.min_doc_id,
             "max_doc_id": self.max_doc_id,
-            "p50_chars_approx": self._percentile(sorted_sample, 50),
-            "p90_chars_approx": self._percentile(sorted_sample, 90),
-            "p99_chars_approx": self._percentile(sorted_sample, 99),
+            "p50_chars_approx": nearest_rank_percentile(sorted_sample, 50),
+            "p90_chars_approx": nearest_rank_percentile(sorted_sample, 90),
+            "p99_chars_approx": nearest_rank_percentile(sorted_sample, 99),
             "empty_count": self.empty_count,
             "whitespace_only_count": self.whitespace_only_count,
             "none_or_non_str_content_count": self.none_or_non_str_content_count,
@@ -295,6 +244,7 @@ def compute_content_stats_approx(
     expected_doc_count: int = 1_000_000,
     fp_rate: float = 0.01,
     reservoir_size: int = 10_000,
+    seed: int | None = None,
 ) -> dict[str, Any]:
     """Compute approximate content health/statistics over a stream of
     documents, using fixed (O(1)) memory regardless of corpus size.
@@ -329,10 +279,15 @@ def compute_content_stats_approx(
             never undercounts true duplicates by more than this rate
             would suggest, though it may overcount slightly.
         reservoir_size: Number of lengths to retain in the reservoir
-            sample used to estimate the standard deviation and
-            percentiles. Larger values improve estimate accuracy at
-            the cost of more memory; the memory cost is still fixed
-            (independent of the number of documents processed).
+            sample used to estimate the percentiles. Larger values
+            improve estimate accuracy at the cost of more memory; the
+            memory cost is still fixed (independent of the number of
+            documents processed).
+        seed: Optional seed for the reservoir sampling, for
+            reproducible percentile estimates. If ``None``, sampling
+            is not reproducible. Uses a private random generator, so
+            the global :mod:`random` state is neither read nor
+            modified.
 
     Returns:
         A dict of statistics as described in
@@ -364,6 +319,7 @@ def compute_content_stats_approx(
         expected_doc_count=expected_doc_count,
         fp_rate=fp_rate,
         reservoir_size=reservoir_size,
+        seed=seed,
     )
     for doc in documents:
         stats.update(doc)
