@@ -1,4 +1,15 @@
-r"""Contain utilities to transform documents."""
+r"""Contain utilities to transform documents.
+
+Mutation semantics:
+
+- ``assign_ids`` and ``copy_ids_to_metadata`` modify the given
+  documents in place and return the same list.
+- ``truncate_documents`` returns new ``Document`` objects (with copied
+  metadata).
+- All other functions return a new list (or string) and never modify
+  their input, but the returned list may contain the same ``Document``
+  objects as the input.
+"""
 
 from __future__ import annotations
 

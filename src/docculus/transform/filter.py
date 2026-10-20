@@ -7,11 +7,13 @@ __all__ = ["filter_by_metadata", "filter_by_metadata_range", "filter_by_metadata
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import Collection, Iterable
+
     from langchain_core.documents import Document
 
 
 def filter_by_metadata(
-    docs: list[Document],
+    docs: Iterable[Document],
     metadata_key: str,
     value: Any,
 ) -> list[Document]:
@@ -52,7 +54,7 @@ def filter_by_metadata(
 
 
 def filter_by_metadata_range(
-    docs: list[Document],
+    docs: Iterable[Document],
     metadata_key: str,
     lower: Any = None,
     upper: Any = None,
@@ -120,9 +122,9 @@ def filter_by_metadata_range(
 
 
 def filter_by_metadata_values(
-    docs: list[Document],
+    docs: Iterable[Document],
     metadata_key: str,
-    values: set[Any],
+    values: Collection[Any],
 ) -> list[Document]:
     """Filter a list of documents by checking if a metadata value is in
     a set.

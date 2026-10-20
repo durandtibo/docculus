@@ -3,18 +3,20 @@ collections."""
 
 from __future__ import annotations
 
-__all__ = ["generate_deterministic_id", "generate_id", "generate_random_id"]
+__all__ = ["IdMode", "generate_deterministic_id", "generate_id", "generate_random_id"]
 
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from docculus.hashing import hash_document_to_uuid
 
 if TYPE_CHECKING:
     from langchain_core.documents import Document
 
+IdMode = Literal["deterministic", "random"]
 
-def generate_id(doc: Document, mode: str = "deterministic") -> str:
+
+def generate_id(doc: Document, mode: IdMode = "deterministic") -> str:
     r"""Generate a unique identifier for a document.
 
     Dispatches to :func:`generate_deterministic_id` or

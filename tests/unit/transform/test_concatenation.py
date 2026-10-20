@@ -471,3 +471,57 @@ def test_format_documents_as_json_with_metadata_multiple_documents_exact_string(
         "  }\n"
         "]"
     )
+
+
+def test_format_documents_use_doc_ids_xml() -> None:
+    docs = [Document(id="a", page_content="A"), Document(page_content="B")]
+    assert format_documents_as_xml(docs, use_doc_ids=True) == (
+        '<document id="a">\nA\n</document>\n\n<document id="2">\nB\n</document>'
+    )
+
+
+def test_format_documents_use_doc_ids_markdown() -> None:
+    docs = [Document(id="a", page_content="A")]
+    assert format_documents_as_markdown(docs, use_doc_ids=True) == "## Document a\n\nA"
+
+
+def test_format_documents_use_doc_ids_json() -> None:
+    docs = [Document(id="a", page_content="A"), Document(page_content="B")]
+    result = json.loads(format_documents_as_json(docs, use_doc_ids=True))
+    assert [entry["id"] for entry in result] == ["a", "2"]
+
+
+def test_format_documents_use_doc_ids_dispatcher() -> None:
+    docs = [Document(id="a", page_content="A")]
+    assert 'id="a"' in format_documents(docs, use_doc_ids=True)
+
+
+def test_format_documents_as_xml_escapes_content_metadata_and_ids() -> None:
+    docs = [Document(id='x"><b', page_content="</document> & <b>", metadata={"k<": "v&"})]
+    result = format_documents_as_xml(docs, include_metadata=True, use_doc_ids=True)
+    assert "</document> &" not in result
+    assert "&lt;/document&gt; &amp; &lt;b&gt;" in result
+    assert "k&lt;: v&amp;" in result
+    assert result.count("</document>") == 1
+
+
+def test_format_documents_nested_metadata_rendered_as_json() -> None:
+    docs = [Document(page_content="A", metadata={"tags": ["a", "b"], "n": {"x": 1}})]
+    result = format_documents_as_markdown(docs, include_metadata=True)
+    assert '- n: {"x": 1}' in result
+    assert '- tags: ["a", "b"]' in result
+
+
+def test_format_documents_as_json_indent_and_ensure_ascii() -> None:
+    docs = [Document(page_content="café")]
+    assert "café" in format_documents_as_json(docs)
+    assert "\\u00e9" in format_documents_as_json(docs, ensure_ascii=True)
+    assert "\n" not in format_documents_as_json(docs, indent=None)
+
+
+def test_format_documents_accepts_generator() -> None:
+    docs = (Document(page_content=c) for c in "AB")
+    assert (
+        format_documents(docs, output_format="markdown")
+        == "## Document 1\n\nA\n\n## Document 2\n\nB"
+    )

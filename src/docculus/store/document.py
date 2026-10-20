@@ -11,18 +11,16 @@ from typing import TYPE_CHECKING, Any, Literal
 from coola.display import MultilineDisplayMixin
 from langchain_core.documents import Document
 
+from docculus.store._constants import CONTENT_KEY, METADATA_KEY
 from docculus.store.base import BaseDocumentStore
 from docculus.utils.imports import check_persista
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator, Generator, Iterator
+    from collections.abc import AsyncIterator, Iterator
 
     from persista.store import BaseStore
 
 MetadataMode = Literal["single", "flat"]
-
-_CONTENT_KEY = "page_content"
-_METADATA_KEY = "metadata"
 
 
 class DocumentStore(BaseDocumentStore, MultilineDisplayMixin):
@@ -71,19 +69,19 @@ class DocumentStore(BaseDocumentStore, MultilineDisplayMixin):
     def _to_value(self, doc: Document) -> dict[str, Any]:
         if self._metadata_mode == "single":
             return {
-                _CONTENT_KEY: doc.page_content,
-                _METADATA_KEY: json.dumps(doc.metadata),
+                CONTENT_KEY: doc.page_content,
+                METADATA_KEY: json.dumps(doc.metadata),
             }
-        if _CONTENT_KEY in doc.metadata:
-            msg = f"Metadata key {_CONTENT_KEY!r} is reserved when metadata_mode='flat'"
+        if CONTENT_KEY in doc.metadata:
+            msg = f"Metadata key {CONTENT_KEY!r} is reserved when metadata_mode='flat'"
             raise ValueError(msg)
-        return {_CONTENT_KEY: doc.page_content, **doc.metadata}
+        return {CONTENT_KEY: doc.page_content, **doc.metadata}
 
     def _from_value(self, doc_id: str, value: dict[str, Any]) -> Document:
         value = dict(value)
-        content = value.pop(_CONTENT_KEY, "")
+        content = value.pop(CONTENT_KEY, "")
         if self._metadata_mode == "single":
-            metadata = value.pop(_METADATA_KEY, None) or "{}"
+            metadata = value.pop(METADATA_KEY, None) or "{}"
             metadata = json.loads(metadata) if isinstance(metadata, str) else metadata
         else:
             metadata = value
@@ -174,7 +172,7 @@ class DocumentStore(BaseDocumentStore, MultilineDisplayMixin):
         async for key in self._store.akeys():
             yield key
 
-    def iter_batches(self, batch_size: int = 32) -> Generator[list[Document]]:
+    def iter_batches(self, batch_size: int = 32) -> Iterator[list[Document]]:
         for batch in self._store.iter_batches(batch_size=batch_size):
             yield [self._from_value(doc_id, value) for doc_id, value in batch.items()]
 

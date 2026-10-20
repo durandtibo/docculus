@@ -7,6 +7,7 @@ __all__ = [
     "DocumentStore",
     "DuckDBDocumentStore",
     "InMemoryDocumentStore",
+    "MetadataMode",
     "SQLiteDocumentStore",
     "TypedDuckDBDocumentStore",
     "TypedSQLiteDocumentStore",
@@ -20,4 +21,4 @@ from docculus.store.custom import (
     TypedDuckDBDocumentStore,
     TypedSQLiteDocumentStore,
 )
-from docculus.store.document import DocumentStore
+from docculus.store.document import DocumentStore, MetadataMode

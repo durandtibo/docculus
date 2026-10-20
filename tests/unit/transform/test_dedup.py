@@ -145,3 +145,11 @@ def test_deduplicate_documents_log_true_empty_list_logs_zeros(
     assert len(caplog.records) == 1
     message = caplog.records[0].getMessage()
     assert "0" in message
+
+
+def test_deduplicate_documents_accepts_generator_with_log(caplog: pytest.LogCaptureFixture) -> None:
+    docs = (Document(page_content="A") for _ in range(3))
+    with caplog.at_level("INFO"):
+        result = deduplicate_documents(docs, log=True)
+    assert len(result) == 1
+    assert "3 -> 1 (2 duplicate(s) removed)" in caplog.text

@@ -13,7 +13,8 @@ __all__ = [
 
 from typing import TYPE_CHECKING, Any
 
-from docculus.store.document import _CONTENT_KEY, _METADATA_KEY, DocumentStore
+from docculus.store._constants import CONTENT_KEY, METADATA_KEY
+from docculus.store.document import DocumentStore
 from docculus.utils.imports import check_persista, is_persista_available
 
 if TYPE_CHECKING:
@@ -70,7 +71,7 @@ class DuckDBDocumentStore(DocumentStore):
         check_persista()
         store = TypedDuckDBStore(
             database,
-            value_schema={_CONTENT_KEY: "TEXT NOT NULL", _METADATA_KEY: "JSON"},
+            value_schema={CONTENT_KEY: "TEXT NOT NULL", METADATA_KEY: "JSON"},
             **kwargs,
         )
         super().__init__(store, metadata_mode="single")
@@ -129,7 +130,7 @@ class TypedDuckDBDocumentStore(DocumentStore):
         check_persista()
         store = TypedDuckDBStore(
             database,
-            value_schema={_CONTENT_KEY: "TEXT NOT NULL"} | (metadata_schema or {}),
+            value_schema={CONTENT_KEY: "TEXT NOT NULL"} | (metadata_schema or {}),
             **kwargs,
         )
         self._metadata_keys = frozenset(metadata_schema or {})
@@ -223,7 +224,7 @@ class SQLiteDocumentStore(DocumentStore):
         check_persista()
         store = TypedSQLiteStore(
             database,
-            value_schema={_CONTENT_KEY: "TEXT NOT NULL", _METADATA_KEY: "JSON"},
+            value_schema={CONTENT_KEY: "TEXT NOT NULL", METADATA_KEY: "JSON"},
             **kwargs,
         )
         super().__init__(store, metadata_mode="single")
@@ -282,7 +283,7 @@ class TypedSQLiteDocumentStore(DocumentStore):
         check_persista()
         store = TypedSQLiteStore(
             database,
-            value_schema={_CONTENT_KEY: "TEXT NOT NULL"} | (metadata_schema or {}),
+            value_schema={CONTENT_KEY: "TEXT NOT NULL"} | (metadata_schema or {}),
             **kwargs,
         )
         self._metadata_keys = frozenset(metadata_schema or {})

@@ -388,3 +388,8 @@ def test_filter_by_metadata_values_preserves_order(category_docs: list[Document]
         Document(page_content="B", metadata={"category": "Cooking", "page": 2}),
         Document(page_content="D", metadata={"category": "Science", "page": 4}),
     ]
+
+
+def test_filter_by_metadata_values_accepts_list_and_generator() -> None:
+    docs = (Document(page_content=str(v), metadata={"k": v}) for v in (1, 2, 3))
+    assert [d.metadata["k"] for d in filter_by_metadata_values(docs, "k", [1, 3])] == [1, 3]

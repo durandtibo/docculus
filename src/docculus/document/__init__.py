@@ -8,6 +8,7 @@ that operate on a corpus (an iterable of documents), see
 from __future__ import annotations
 
 __all__ = [
+    "IdMode",
     "generate_deterministic_id",
     "generate_id",
     "generate_random_id",
@@ -22,6 +23,7 @@ __all__ = [
 
 from docculus.document.empty import is_empty, is_whitespace_only
 from docculus.document.id import (
+    IdMode,
     generate_deterministic_id,
     generate_id,
     generate_random_id,

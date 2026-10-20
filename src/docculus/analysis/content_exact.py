@@ -4,11 +4,15 @@ from __future__ import annotations
 
 __all__ = ["ExactContentStats", "compute_content_stats_exact"]
 
-import hashlib
+from array import array
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from docculus.document import get_length
+from docculus.analysis._content_base import (
+    ContentStatsBase,
+    content_hash,
+    nearest_rank_percentile,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -17,7 +21,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(slots=True)
-class ExactContentStats:
+class ExactContentStats(ContentStatsBase):
     """Streaming document health/analysis with EXACT duplicate detection
     and EXACT percentiles.
 
@@ -67,22 +71,10 @@ class ExactContentStats:
             content is not counted as a duplicate.
     """
 
-    count: int = 0
-    total_chars: int = 0
-    min_chars: int | None = None
-    max_chars: int | None = None
-    min_doc_id: Any | None = None
-    max_doc_id: Any | None = None
-
-    empty_count: int = 0
-    whitespace_only_count: int = 0
-    none_or_non_str_content_count: int = 0
-    none_id_count: int = 0
-    missing_metadata_count: int = 0
     duplicate_count: int = 0
 
-    _seen_hashes: set[bytes] = field(default_factory=set)
-    _lengths: list[int] = field(default_factory=list)
+    _seen_hashes: set[bytes] = field(default_factory=set, init=False, repr=False)
+    _lengths: array = field(default_factory=lambda: array("q"), init=False, repr=False)
 
     def update(self, doc: Document) -> None:
         """Fold a single document into the running statistics.
@@ -103,59 +95,15 @@ class ExactContentStats:
                 be a mapping; a falsy/empty mapping is counted via
                 ``missing_metadata_count``.
         """
-        doc_id = doc.id  # always present per assumption, may be None
-        if doc_id is None:
-            self.none_id_count += 1
+        content, length = self._update_base(doc)
 
-        content = doc.page_content
-        if not isinstance(content, str):
-            self.none_or_non_str_content_count += 1
-            content = ""
-
-        if content == "":
-            self.empty_count += 1
-        elif content.strip() == "":
-            self.whitespace_only_count += 1
-
-        if not doc.metadata:
-            self.missing_metadata_count += 1
-
-        content_hash = hashlib.sha256(content.encode("utf-8", errors="surrogatepass")).digest()
-        if content_hash in self._seen_hashes:
+        digest = content_hash(content)
+        if digest in self._seen_hashes:
             self.duplicate_count += 1
         else:
-            self._seen_hashes.add(content_hash)
+            self._seen_hashes.add(digest)
 
-        length = get_length(doc)
-        self.count += 1
-        self.total_chars += length
         self._lengths.append(length)
-
-        if self.min_chars is None or length < self.min_chars:
-            self.min_chars, self.min_doc_id = length, doc_id
-        if self.max_chars is None or length > self.max_chars:
-            self.max_chars, self.max_doc_id = length, doc_id
-
-    def _percentile(self, sorted_lengths: list[int], p: float) -> float | None:
-        """Compute an exact percentile from a pre-sorted list of
-        lengths.
-
-        Uses nearest-rank interpolation: the index into
-        ``sorted_lengths`` is ``round(p / 100 * (n - 1))``.
-
-        Args:
-            sorted_lengths: Document content lengths, sorted in
-                ascending order.
-            p: Percentile to compute, in the range ``[0, 100]``.
-
-        Returns:
-            The length at the requested percentile, or ``None`` if
-            ``sorted_lengths`` is empty.
-        """
-        if not sorted_lengths:
-            return None
-        k = round(p / 100 * (len(sorted_lengths) - 1))
-        return sorted_lengths[k]
 
     def to_dict(self) -> dict[str, Any]:
         """Compute the final statistics report from the accumulated
@@ -221,9 +169,9 @@ class ExactContentStats:
             "max_chars": self.max_chars,
             "min_doc_id": self.min_doc_id,
             "max_doc_id": self.max_doc_id,
-            "p50_chars": self._percentile(sorted_lengths, 50),
-            "p90_chars": self._percentile(sorted_lengths, 90),
-            "p99_chars": self._percentile(sorted_lengths, 99),
+            "p50_chars": nearest_rank_percentile(sorted_lengths, 50),
+            "p90_chars": nearest_rank_percentile(sorted_lengths, 90),
+            "p99_chars": nearest_rank_percentile(sorted_lengths, 99),
             "empty_count": self.empty_count,
             "whitespace_only_count": self.whitespace_only_count,
             "none_or_non_str_content_count": self.none_or_non_str_content_count,

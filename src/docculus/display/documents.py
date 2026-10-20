@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 def print_documents(
     documents: Iterable[Document],
     max_length: int = 500,
+    *,
     console: Console | None = None,
     compact_metadata: bool = False,
 ) -> None:

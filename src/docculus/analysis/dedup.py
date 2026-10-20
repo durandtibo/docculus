@@ -4,8 +4,9 @@ from __future__ import annotations
 
 __all__ = ["find_duplicate_document_ids"]
 
-import hashlib
 from typing import TYPE_CHECKING, Any
+
+from docculus.analysis._content_base import content_hash
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -55,6 +56,6 @@ def find_duplicate_document_ids(documents: Iterable[Document]) -> list[list[Any]
         content = document.page_content
         if not isinstance(content, str):
             continue
-        content_hash = hashlib.sha256(content.encode("utf-8", errors="surrogatepass")).digest()
-        groups.setdefault(content_hash, []).append(document.id)
+        digest = content_hash(content)
+        groups.setdefault(digest, []).append(document.id)
     return [group for group in groups.values() if len(group) > 1]
