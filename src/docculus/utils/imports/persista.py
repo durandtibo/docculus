@@ -9,8 +9,8 @@ __all__ = [
     "raise_persista_missing_error",
 ]
 
-from functools import lru_cache
-from typing import TYPE_CHECKING, Any, NoReturn, TypeVar
+from functools import cache
+from typing import TYPE_CHECKING, Any, Never, TypeVar
 
 from coola.utils.imports import (
     decorator_package_available,
@@ -41,7 +41,7 @@ def check_persista() -> None:
         raise_persista_missing_error()
 
 
-@lru_cache(1)
+@cache
 def is_persista_available() -> bool:
     r"""Indicate if the ``persista`` package is installed or not.
 
@@ -84,7 +84,7 @@ def persista_available(fn: F) -> F:
     return decorator_package_available(fn, is_persista_available)
 
 
-def raise_persista_missing_error() -> NoReturn:
+def raise_persista_missing_error() -> Never:
     r"""Raise a RuntimeError to indicate the ``persista`` package is
     missing."""
     raise_package_missing_error("persista", "persista")

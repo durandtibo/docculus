@@ -220,7 +220,7 @@ class BaseDocumentStore(ABC):
                 yield doc
 
     @abstractmethod
-    def iter_batches(self, batch_size: int = 32) -> Generator[list[Document], None, None]:
+    def iter_batches(self, batch_size: int = 32) -> Generator[list[Document]]:
         """Yield documents in batches, avoiding loading the whole store
         into memory at once.
 

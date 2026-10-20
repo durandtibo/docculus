@@ -171,7 +171,7 @@ class DocumentStore(BaseDocumentStore, MultilineDisplayMixin):
         async for key in self._store.akeys():
             yield key
 
-    def iter_batches(self, batch_size: int = 32) -> Generator[list[Document], None, None]:
+    def iter_batches(self, batch_size: int = 32) -> Generator[list[Document]]:
         for batch in self._store.iter_batches(batch_size=batch_size):
             yield [self._from_value(doc_id, value) for doc_id, value in batch.items()]
 
