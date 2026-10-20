@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from langchain_core.documents import Document
 
 
-@dataclass
+@dataclass(slots=True)
 class ExactContentStats:
     """Streaming document health/analysis with EXACT duplicate detection
     and EXACT percentiles.

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from langchain_core.documents import Document
 
 
-@dataclass
+@dataclass(slots=True)
 class ApproxContentStats:
     """Streaming document health/analysis with APPROXIMATE duplicate
     detection and APPROXIMATE percentiles.

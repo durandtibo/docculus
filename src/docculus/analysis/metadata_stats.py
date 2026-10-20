@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from langchain_core.documents import Document
 
 
-@dataclass
+@dataclass(slots=True)
 class MetadataStats:
     """Streaming document metadata health/analysis.
 
