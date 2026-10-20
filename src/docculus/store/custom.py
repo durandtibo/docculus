@@ -19,6 +19,8 @@ from docculus.utils.imports import check_persista, is_persista_available
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from langchain_core.documents import Document
+
 if is_persista_available():  # pragma: no cover
     from persista.store import InMemoryStore, TypedDuckDBStore, TypedSQLiteStore
 
@@ -130,7 +132,17 @@ class TypedDuckDBDocumentStore(DocumentStore):
             value_schema={_CONTENT_KEY: "TEXT NOT NULL"} | (metadata_schema or {}),
             **kwargs,
         )
+        self._metadata_keys = frozenset(metadata_schema or {})
         super().__init__(store, metadata_mode="flat")
+
+    def _to_value(self, doc: Document) -> dict[str, Any]:
+        unknown = sorted(set(doc.metadata) - self._metadata_keys)
+        if unknown:
+            msg = (
+                f"Document {doc.id!r} has metadata keys not declared in metadata_schema: {unknown}"
+            )
+            raise ValueError(msg)
+        return super()._to_value(doc)
 
 
 class InMemoryDocumentStore(DocumentStore):
@@ -273,4 +285,14 @@ class TypedSQLiteDocumentStore(DocumentStore):
             value_schema={_CONTENT_KEY: "TEXT NOT NULL"} | (metadata_schema or {}),
             **kwargs,
         )
+        self._metadata_keys = frozenset(metadata_schema or {})
         super().__init__(store, metadata_mode="flat")
+
+    def _to_value(self, doc: Document) -> dict[str, Any]:
+        unknown = sorted(set(doc.metadata) - self._metadata_keys)
+        if unknown:
+            msg = (
+                f"Document {doc.id!r} has metadata keys not declared in metadata_schema: {unknown}"
+            )
+            raise ValueError(msg)
+        return super()._to_value(doc)

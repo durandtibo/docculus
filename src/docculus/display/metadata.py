@@ -12,6 +12,7 @@ from coola.utils.imports import check_rich, is_rich_available
 if is_rich_available():
     from rich import get_console
     from rich.console import Console, Group
+    from rich.markup import escape
     from rich.panel import Panel
     from rich.text import Text
 
@@ -48,11 +49,14 @@ def print_documents_metadata(
 
     lines: list[Text] = []
     for i, doc in enumerate(documents):
-        label = f"[cyan]{doc.id}[/cyan]" if doc.id else f"[dim]#{i}[/dim]"
+        label = f"[cyan]{escape(str(doc.id))}[/cyan]" if doc.id else f"[dim]#{i}[/dim]"
 
         if doc.metadata:
             sorted_items = sorted(doc.metadata.items())
-            meta = sep.join(f"[bold]{key}[/bold]: {value}" for key, value in sorted_items)
+            meta = sep.join(
+                f"[bold]{escape(str(key))}[/bold]: {escape(str(value))}"
+                for key, value in sorted_items
+            )
         else:
             meta = "[dim italic]no metadata[/dim italic]"
 

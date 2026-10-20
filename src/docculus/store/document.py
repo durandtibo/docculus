@@ -74,6 +74,9 @@ class DocumentStore(BaseDocumentStore, MultilineDisplayMixin):
                 _CONTENT_KEY: doc.page_content,
                 _METADATA_KEY: json.dumps(doc.metadata),
             }
+        if _CONTENT_KEY in doc.metadata:
+            msg = f"Metadata key {_CONTENT_KEY!r} is reserved when metadata_mode='flat'"
+            raise ValueError(msg)
         return {_CONTENT_KEY: doc.page_content, **doc.metadata}
 
     def _from_value(self, doc_id: str, value: dict[str, Any]) -> Document:

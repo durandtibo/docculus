@@ -101,7 +101,7 @@ def copy_ids_to_metadata(
         >>> from langchain_core.documents import Document
         >>> from docculus.transform import copy_ids_to_metadata
         >>> docs = [Document(page_content="Hello", id="doc-1")]
-        >>> copy_ids_to_metadata(docs)
+        >>> docs = copy_ids_to_metadata(docs)
         >>> docs[0].metadata["source_id"]
         'doc-1'
 

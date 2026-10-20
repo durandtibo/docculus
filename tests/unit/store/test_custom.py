@@ -589,3 +589,27 @@ async def test_atyped_sqlite_document_store_with_metadata_schema() -> None:
         assert await store.aget("1") == Document(
             id="1", page_content="hello", metadata={"author": "Alice"}
         )
+
+
+@persista_available
+def test_typed_store_rejects_undeclared_metadata_key() -> None:
+    with (
+        TypedSQLiteDocumentStore(metadata_schema={"author": "TEXT"}) as store,
+        pytest.raises(ValueError, match="not declared in metadata_schema"),
+    ):
+        store.set_many([Document(id="1", page_content="x", metadata={"other": 1})])
+
+
+@persista_available
+def test_flat_store_rejects_reserved_metadata_key() -> None:
+    with InMemoryDocumentStore() as store, pytest.raises(ValueError, match="reserved"):
+        store.set_many([Document(id="1", page_content="x", metadata={"page_content": 1})])
+
+
+@persista_available
+def test_typed_duckdb_store_rejects_undeclared_metadata_key() -> None:
+    with (
+        TypedDuckDBDocumentStore(metadata_schema={"author": "TEXT"}) as store,
+        pytest.raises(ValueError, match="not declared in metadata_schema"),
+    ):
+        store.set_many([Document(id="1", page_content="x", metadata={"other": 1})])

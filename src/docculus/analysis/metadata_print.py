@@ -11,6 +11,7 @@ from coola.utils.imports import check_rich, is_rich_available
 if is_rich_available():  # pragma: no cover
     from rich import get_console
     from rich.console import Console, Group
+    from rich.markup import escape
     from rich.panel import Panel
     from rich.table import Table
     from rich.text import Text
@@ -164,7 +165,7 @@ def _build_key_sample(info: dict[str, Any]) -> str:
         ... })
         'a, b, …'
     """
-    sample = ", ".join(str(v) for v in info["unique_values_sample"])
+    sample = ", ".join(escape(str(v)) for v in info["unique_values_sample"])
     if info["unique_values_sample_truncated"]:
         sample = f"{sample}, …" if sample else "…"
     return sample
@@ -208,9 +209,9 @@ def _build_per_key_table(per_key: dict[str, Any], count: int) -> Table:
 
     for key, info in per_key.items():
         table.add_row(
-            key,
+            escape(str(key)),
             _format_count(info["present_in_docs"], count),
-            ", ".join(info["value_types"]),
+            ", ".join(escape(t) for t in info["value_types"]),
             _format_count(info["none_or_empty_count"], count),
             _build_key_sample(info),
             _build_key_flags(info),

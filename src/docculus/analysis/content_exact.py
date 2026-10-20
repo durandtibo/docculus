@@ -120,7 +120,7 @@ class ExactContentStats:
         if not doc.metadata:
             self.missing_metadata_count += 1
 
-        content_hash = hashlib.sha256(content.encode("utf-8", errors="ignore")).digest()
+        content_hash = hashlib.sha256(content.encode("utf-8", errors="surrogatepass")).digest()
         if content_hash in self._seen_hashes:
             self.duplicate_count += 1
         else:

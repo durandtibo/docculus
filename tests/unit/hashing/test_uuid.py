@@ -68,3 +68,9 @@ def test_hash_document_to_uuid_nested_metadata_order_independent() -> None:
     doc_a = Document(page_content="Hello", metadata={"info": {"year": 2024, "topic": "cats"}})
     doc_b = Document(page_content="Hello", metadata={"info": {"topic": "cats", "year": 2024}})
     assert hash_document_to_uuid(doc_a) == hash_document_to_uuid(doc_b)
+
+
+def test_hash_document_to_uuid_no_content_metadata_ambiguity() -> None:
+    doc1 = Document(page_content='x{"a": 1}', metadata={})
+    doc2 = Document(page_content="x", metadata={"a": 1})
+    assert hash_document_to_uuid(doc1) != hash_document_to_uuid(doc2)

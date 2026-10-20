@@ -30,7 +30,8 @@ def find_duplicate_document_ids(documents: Iterable[Document]) -> list[list[Any]
 
     Returns:
         A list of groups of document ``id``s whose ``page_content`` is
-        identical. Each group contains two or more ids, in the order
+        identical. Documents whose ``page_content`` is not a string are
+        skipped. Each group contains two or more ids, in the order
         their documents were encountered; groups are in the order their
         first member was encountered. Documents with unique content are
         not included in the result.
@@ -53,7 +54,7 @@ def find_duplicate_document_ids(documents: Iterable[Document]) -> list[list[Any]
     for document in documents:
         content = document.page_content
         if not isinstance(content, str):
-            content = ""
-        content_hash = hashlib.sha256(content.encode("utf-8", errors="ignore")).digest()
+            continue
+        content_hash = hashlib.sha256(content.encode("utf-8", errors="surrogatepass")).digest()
         groups.setdefault(content_hash, []).append(document.id)
     return [group for group in groups.values() if len(group) > 1]

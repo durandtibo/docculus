@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from langchain_core.documents import Document
 
@@ -177,3 +179,14 @@ def test_hash_documents_metadata_order_independent() -> None:
         Document(page_content="World", metadata={"page": 2, "source": "b.txt"}),
     ]
     assert hash_documents(docs_reordered) == hash_documents(docs_same_reversed_meta)
+
+
+def test_hash_document_no_content_metadata_ambiguity() -> None:
+    doc1 = Document(page_content='x{"a": 1}', metadata={})
+    doc2 = Document(page_content="x", metadata={"a": 1})
+    assert hash_document(doc1) != hash_document(doc2)
+
+
+def test_hash_document_non_json_metadata() -> None:
+    doc = Document(page_content="x", metadata={"path": Path("a")})
+    assert len(hash_document(doc)) == 64

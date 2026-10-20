@@ -12,6 +12,7 @@ from coola.utils.imports import check_rich, is_rich_available
 if is_rich_available():
     from rich import get_console
     from rich.console import Console, Group
+    from rich.markup import escape
     from rich.panel import Panel
     from rich.text import Text
 
@@ -97,10 +98,16 @@ def print_document(
         sorted_items = sorted(doc.metadata.items())
 
         if compact_metadata:
-            line = " · ".join(f"[bold]{key}[/bold]: {value}" for key, value in sorted_items)
+            line = " · ".join(
+                f"[bold]{escape(str(key))}[/bold]: {escape(str(value))}"
+                for key, value in sorted_items
+            )
             metadata_renderable = Text.from_markup(line, style="dim")
         else:
-            lines = "\n".join(f"[bold]{key}[/bold]: {value}" for key, value in sorted_items)
+            lines = "\n".join(
+                f"[bold]{escape(str(key))}[/bold]: {escape(str(value))}"
+                for key, value in sorted_items
+            )
             metadata_renderable = Text.from_markup(lines, style="dim")
 
         boxes.append(
@@ -112,7 +119,11 @@ def print_document(
             )
         )
 
-    title = f"[bold]Document[/bold] [cyan]{doc.id}[/cyan]" if doc.id else "[bold]Document[/bold]"
+    title = (
+        f"[bold]Document[/bold] [cyan]{escape(str(doc.id))}[/cyan]"
+        if doc.id
+        else "[bold]Document[/bold]"
+    )
     console.print(
         Panel(
             Group(*boxes),
