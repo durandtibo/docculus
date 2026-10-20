@@ -36,9 +36,7 @@ def metadata_mode(request: pytest.FixtureRequest) -> MetadataMode:
 
 
 @pytest.fixture
-def store(
-    raw_store_cls: type[BaseStore], metadata_mode: MetadataMode
-) -> Generator[DocumentStore, None, None]:
+def store(raw_store_cls: type[BaseStore], metadata_mode: MetadataMode) -> Generator[DocumentStore]:
     with DocumentStore(_new_raw_store(raw_store_cls), metadata_mode=metadata_mode) as store:
         yield store
 
