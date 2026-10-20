@@ -1,10 +1,14 @@
 # Codebase review: suggestions
 
-Scope: every module under `src/docculus/`, plus `examples/`, `pyproject.toml`, the docs layout, the tests layout and the CI/tooling layout. I read the source in full. I did not run the test suite or the linters, so each item below comes from reading the code. Items are grouped by priority. Line references are to the current `main`.
+Scope: every module under `src/docculus/`, plus `examples/`, `pyproject.toml`, the docs layout, the tests layout and the CI/tooling layout. I read the source in full. The items were found by reading the code, not by running the test suite or the linters. Items are grouped by priority.
+
+**Progress:** sections 1 (likely bugs), 2 (design and API consistency) and 3 (performance and memory) have been worked on; each item carries a status line. Sections 4 to 7 have not been started. Items marked "fixed" are covered by tests and the suite stays at 100% coverage. Line references below refer to the code as it was when reviewed, before these fixes.
 
 ## 1. Likely bugs (fix first)
 
 ### 1.1 Rich markup injection in the display helpers
+
+**Status: fixed.** All interpolated ids, keys and values are escaped with `rich.markup.escape` in the four display/report modules; regression test added.
 
 `display/document.py:125-129`, `display/metadata.py:262`, `display/document.py:140`
 
@@ -17,9 +21,11 @@ Fix: wrap interpolated values in `rich.markup.escape(str(...))`, or build `Text`
 
 ### 1.2 Hash and UUID collisions from ambiguous concatenation
 
+**Status: fixed, with one follow-up left.** Content and metadata are now hashed as one JSON object (shared helper `hashing/_canonical.py`, `default=str` for non-JSON metadata), so the two hashing functions can no longer drift. Not done: a library-wide policy for non-string `page_content` in the hashing functions. Existing ids and hashes change.
+
 `hashing/functions.py:795`, `hashing/uuid.py:948`
 
-`doc.page_content + json.dumps(doc.metadata, sort_keys=True)` has no separator or length prefix, so different documents can produce the same input string. For example, content `'x'` with metadata `{"a": 1}` and content `'x{"a": 1}'` with metadata `{}` do not collide here, but `'x{}'` + `{}` and `'x'` + a metadata dict whose JSON starts with `{}` can. More practically, content that ends in a JSON-looking suffix can alias another document. Deterministic ids are meant to be an idempotent-upsert key, so a collision means silent data loss in the store.
+`doc.page_content + json.dumps(doc.metadata, sort_keys=True)` has no separator or length prefix, so the boundary between content and metadata is not encoded in the hashed string. I could not construct a concrete collision (the metadata JSON always starts with `{` and ends with `}`, which makes real collisions contrived), so this is a robustness issue more than a demonstrated bug: any scheme that relies on that implicit boundary is hard to reason about. Deterministic ids are meant to be an idempotent-upsert key, so a collision means silent data loss in the store.
 
 Fix: hash a structured encoding, e.g. `json.dumps({"c": content, "m": metadata}, sort_keys=True)`, or prefix the content length. This changes every existing id, so do it before 1.0 and note it in the changelog.
 
@@ -30,6 +36,8 @@ Related:
 - `page_content` is assumed to be `str` here, although `is_empty`, `get_length`, `truncate_documents` and the stats classes all defend against `None`. Pick one policy for the whole library.
 
 ### 1.3 `sort_by_metadata` reuses the name `missing` for two things
+
+**Status: fixed.** The name clash and the dead sentinel are gone. Not done: treating an explicit `None` value as missing.
 
 `transform/sort.py:2595-2606`
 
@@ -42,11 +50,15 @@ Also: a document with an explicit `None` value for the key makes `sorted` raise 
 
 ### 1.4 `copy_ids_to_metadata` doctest is wrong
 
+**Status: fixed.** The example now assigns the returned list.
+
 `transform/id.py:2514-2518`
 
 `>>> copy_ids_to_metadata(docs)` returns the list, so the doctest prints a `[Document(...)]` repr that the expected output (nothing) does not match. Either assign the result or check why CI does not catch it (see 5.2).
 
 ### 1.5 `DocumentStore` flat mode has namespace and round-trip problems
+
+**Status: partly fixed.** Done: reserved `page_content` key now raises in flat mode; typed stores reject metadata keys not in `metadata_schema`; JSON handling checked and left as is (consistent string round trip); empty `set_many` verified. Not done: documenting or changing the `None` round trip for typed stores, pushing `filter` down to SQL, and defining/testing behaviour for duplicate ids within one batch.
 
 `store/document.py:1658-1674`
 
@@ -59,6 +71,8 @@ Also: a document with an explicit `None` value for the key makes `sorted` raise 
 
 ### 1.6 `find_duplicate_document_ids` treats non-string content as `""`
 
+**Status: fixed.** Non-string content is skipped, `surrogatepass` is used everywhere, and the hash is shared in `analysis/_content_base.py`.
+
 `analysis/dedup.py:1170`
 
 A document with `page_content=None` is grouped with genuinely empty documents, and `errors="ignore"` on `encode` makes lone surrogates collapse to the same hash as the text without them. Skip non-string content (or report it separately), and use `errors="surrogatepass"` so distinct strings stay distinct. The same two lines are copied into `content_exact.py` and `content_approx.py`.
@@ -67,9 +81,13 @@ A document with `page_content=None` is grouped with genuinely empty documents, a
 
 ### 2.1 `list` versus `Iterable` parameter types
 
+**Status: fixed.** `assign_ids` and `copy_ids_to_metadata` intentionally stay `list`, since they mutate in place and return the same list.
+
 Analysis functions accept `Iterable[Document]` and say so. Most transform functions (`filter_*`, `sort_by_metadata`, `deduplicate_documents`, `assign_ids`, `format_documents*`, `validate_document_consistency`) take `list[Document]` although they only iterate once. Widen to `Iterable` (or `Sequence` where `len()` is needed) so generators from loaders work, and note which functions return a new list. `hash_documents` has to stay `list`/`Sequence` because order matters.
 
 ### 2.2 Mutating versus copying
+
+**Status: mostly fixed.** `truncate_documents` copies metadata and the `transform` package docstring documents mutation semantics. Not done: an `inplace=False` option.
 
 - `assign_ids` and `copy_ids_to_metadata` mutate in place and return the same list.
 - `truncate_documents` returns new `Document` objects, but they share the original `metadata` dict (`metadata=doc.metadata`), so mutating a result mutates the input. Copy it with `dict(doc.metadata)`.
@@ -79,13 +97,19 @@ Document this once in the `transform` package docstring. Consider offering a non
 
 ### 2.3 Boolean arguments should be keyword-only
 
+**Status: fixed.** Breaking change for callers that passed these arguments positionally.
+
 `deduplicate_documents(docs, log=False)`, `format_documents(documents, include_metadata=False, output_format="xml")`, `print_document(..., compact_metadata=False)` and `generate_fake_documents(n, seed, nb_sentences)` accept positional booleans or ints. Newer functions already use `*`. Make the rest consistent now, before the API is public.
 
 ### 2.4 String-typed modes should be `Literal`
 
+**Status: fixed.** New `IdMode` and `OutputFormat` types.
+
 `generate_id(doc, mode: str)`, `assign_ids(..., mode: str)`, `format_documents(output_format: str)`. Use `Literal["deterministic", "random"]` and `Literal["xml", "markdown", "json"]`, as `MetadataMode` already does. Type checkers then catch typos, and the error branches become the fallback for untyped callers only.
 
 ### 2.5 Format helpers (`transform/format.py`)
+
+**Status: mostly fixed.** Done: XML escaping, `use_doc_ids` option, `indent`/`ensure_ascii` for JSON, nested metadata rendered as JSON. Not done: replacing the two lambdas in `_build_blocks` with a simpler structure.
 
 - The `id` shown in XML, Markdown and JSON output is the 1-based position, not `doc.id`. For RAG prompts the real id (or a `source`) is usually what the model should cite. Add an `id_mode`/`include_ids` option, or at least document the difference prominently, since `Document.id` exists and the key is also called `id`.
 - XML output does not escape content or metadata. A document containing `</document>` closes the block early, which is a prompt-structure injection vector for LLM prompts. Escape, or use a CDATA-like scheme, or document that content is inserted verbatim.
@@ -94,6 +118,8 @@ Document this once in the `transform` package docstring. Consider offering a non
 - Metadata values are stringified with `f"{value}"`. Nested values (lists and dicts) render as Python reprs, not as JSON.
 
 ### 2.6 Stats API shape
+
+**Status: partly fixed.** Done: shared `ContentStatsBase`, `init=False` private state, public `bloom=` argument. Not done: typed result objects, one key set for both variants, `merge()`.
 
 - `compute_content_stats_exact` and `compute_content_stats_approx` return untyped `dict[str, Any]`, and the printers depend on dict keys (`"p50_chars"` versus `"p50_chars_approx"`, `"duplicate_count"` versus `"approx_duplicate_count"`) plus boolean flags that mean "which dict is this".
   - Return a dataclass (or `TypedDict`) with the same field names, and have `to_dict()` for serialization. The printers then take the typed object.
@@ -104,9 +130,13 @@ Document this once in the `transform` package docstring. Consider offering a non
 
 ### 2.7 Exposing `MetadataMode` and the factories
 
+**Status: fixed.** `MetadataMode` is exported; constants moved to `store/_constants.py` (public names `CONTENT_KEY`, `METADATA_KEY`). The `store.factory` package is still not re-exported from `docculus.store`.
+
 `MetadataMode` is in `store.document.__all__` but not re-exported from `docculus.store`. The `store.factory` package is not mentioned by `store/__init__.py`. `store/custom.py` imports the private `_CONTENT_KEY` and `_METADATA_KEY` from `store/document.py`. Make them public constants in a small `store/_constants.py`.
 
 ### 2.8 Five near-identical store classes and five near-identical factories
+
+**Status: not done** (cleanup, not a bug).
 
 `store/custom.py` and `store/factory/custom.py` differ only by backend class, `metadata_schema` and `metadata_mode`. Consider:
 
@@ -118,26 +148,34 @@ The aim is to reduce the surface a new backend (e.g. Postgres) has to copy. This
 
 ### 2.9 `BaseDocumentStore` details
 
+**Status: partly fixed.** Done: `Iterator` annotation, `items()`, `__contains__`. Deliberately not added: `__len__`/`__iter__` (an empty store would be falsy; key vs. document iteration is ambiguous). Not done: a shared contract test that checks the "raises until opened" behaviour for every backend.
+
 - `iter_batches` is annotated `Generator[list[Document]]` with one type argument. That needs Python 3.13 typing defaults; for `requires-python >=3.11`, type checkers on older versions can complain. Use `Iterator[list[Document]]` (simpler, and what callers rely on).
 - `keys()` is abstract, while `values()` has a default built on `iter_batches`. An `items()` (id and document) and `__len__`/`__contains__`/`__iter__` would make the class feel like a mapping, and `__contains__` is a one-liner over `contains`.
 - The "raises until opened" contract is documented in the base class but not enforced there. Test it for every concrete class, since a test helper over `BaseDocumentStore` can verify the contract once for all backends.
 
 ### 2.10 Reservoir sampling is non-reproducible
 
+**Status: fixed.** Private `random.Random` with a `seed` argument.
+
 `analysis/content_approx.py:215` uses the global `random` module. Two runs over the same corpus give different percentiles, and unrelated code that calls `random.seed()` changes the results. Accept a `seed: int | None` or `rng: random.Random` and use a private `random.Random` instance.
 
 ### 2.11 Exact and approximate std-dev and mean
+
+**Status: fixed.** Mean and standard deviation are exact (Welford); only percentiles are estimated.
 
 The approximate class estimates the standard deviation from the reservoir, although mean and variance can be computed exactly in O(1) memory with Welford's algorithm. Do that, and mark only the percentiles as approximate (`std_dev_chars` would then be exact, which is better than the current docstring suggests).
 
 ## 3. Performance and memory
 
-- `ExactContentStats` docstring says lengths cost "8 bytes each". A Python `list[int]` costs about 8 bytes for the pointer plus about 28 bytes per distinct int object, so roughly 36 bytes each, and 100M docs is closer to 3.5 GB, not 800 MB. Store lengths in an `array.array("q")` (really 8 bytes each) or fix the docstring. Content hashes in a `set[bytes]` also cost about 33 bytes of payload plus about 50+ bytes of set overhead, so the "32 bytes each" figure is similarly optimistic.
-- `hashlib.sha256` over every document's full text is computed separately in `dedup.py`, `content_exact.py` and `content_approx.py`. A shared `_content_hash(content)` helper removes the repetition and lets you swap in a faster hash (`blake2b(digest_size=16)` is about 2x faster, and 16 bytes is plenty for dedup). That halves the memory for `_seen_hashes` too.
-- `to_dict()` in the exact stats sorts the full length list on every call. The docstring promises it is safe to call at any point, so repeated calls during streaming are O(n log n) each. Cache the sorted list until the next `update`, or compute all three percentiles in one pass (`statistics.quantiles`, or `heapq`/`numpy` where available).
-- `_percentile` uses `round()`, which applies banker's rounding in Python, so `round(0.5)` is 0 and `round(1.5)` is 2. For p50 over an even-length sample this makes the median depend on parity. Either use linear interpolation (matches `numpy.percentile`/`statistics.quantiles`) or document the nearest-rank definition precisely. Users comparing against pandas will see different numbers.
-- `DocumentStore.filter` could stream and short-circuit when no filters are given. For the empty-filter case, `iter_batches()` is the intended spelling anyway.
-- `get_lengths_with_ids(sort=True)` sorts the whole list when callers often need only the top-k. Offer `get_longest_documents(n)` or a `heapq.nlargest` path. Related: `get_shortest_document` and `get_longest_document` each iterate separately; a combined one-pass `get_length_extremes` would help.
+**Status of each bullet below is given in brackets at its end.**
+
+- `ExactContentStats` docstring says lengths cost "8 bytes each". A Python `list[int]` costs about 8 bytes for the pointer plus about 28 bytes per distinct int object, so roughly 36 bytes each, and 100M docs is closer to 3.5 GB, not 800 MB. Store lengths in an `array.array("q")` (really 8 bytes each) or fix the docstring. Content hashes in a `set[bytes]` also cost about 33 bytes of payload plus about 50+ bytes of set overhead, so the "32 bytes each" figure is similarly optimistic. **[Done: docstring fixed, lengths already an `array`, hash set cost documented.]**
+- `hashlib.sha256` over every document's full text is computed separately in `dedup.py`, `content_exact.py` and `content_approx.py`. A shared `_content_hash(content)` helper removes the repetition and lets you swap in a faster hash (`blake2b(digest_size=16)` is about 2x faster, and 16 bytes is plenty for dedup). That halves the memory for `_seen_hashes` too. **[Done: shared `content_hash` using 16-byte BLAKE2b.]**
+- `to_dict()` in the exact stats sorts the full length list on every call. The docstring promises it is safe to call at any point, so repeated calls during streaming are O(n log n) each. Cache the sorted list until the next `update`, or compute all three percentiles in one pass (`statistics.quantiles`, or `heapq`/`numpy` where available). **[Done: sorted lengths cached until the next `update`.]**
+- `_percentile` uses `round()`, which applies banker's rounding in Python, so `round(0.5)` is 0 and `round(1.5)` is 2. For p50 over an even-length sample this makes the median depend on parity. Either use linear interpolation (matches `numpy.percentile`/`statistics.quantiles`) or document the nearest-rank definition precisely. Users comparing against pandas will see different numbers. **[Done: nearest-rank with round-half-up, documented; percentile values over even-sized data changed.]**
+- `DocumentStore.filter` could stream and short-circuit when no filters are given. For the empty-filter case, `iter_batches()` is the intended spelling anyway. **[Not done: the empty-filter case already works; a streaming return type would change the API.]**
+- `get_lengths_with_ids(sort=True)` sorts the whole list when callers often need only the top-k. Offer `get_longest_documents(n)` or a `heapq.nlargest` path. Related: `get_shortest_document` and `get_longest_document` each iterate separately; a combined one-pass `get_length_extremes` would help. **[Not done: would add public API (top-k and combined extremes).]**
 
 ## 4. Documentation accuracy
 

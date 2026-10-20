@@ -31,9 +31,14 @@ class ExactContentStats(ContentStatsBase):
     ``to_dict`` at the end to compute the final report.
 
     Memory:
-      - O(n) ints for lengths (8 bytes each -> ~800MB for 100M docs)
-      - O(unique docs) hashes for dedup (32 bytes each -> ~1.6GB for 50M
-        unique docs)
+      - O(n) lengths, stored as 8-byte integers (~800MB for 100M
+        docs). ``to_dict`` additionally builds and caches a sorted copy
+        of the lengths as a Python list (roughly 8 bytes per pointer
+        plus ~28 bytes per distinct int), so call it once at the end
+        for very large corpora.
+      - O(unique docs) 16-byte content hashes for dedup, plus the
+        ``set`` overhead (roughly 100 bytes per entry in total, so
+        ~5GB for 50M unique docs).
     Both are much cheaper than storing the raw text itself, but this is
     NOT O(1) memory overall — use the approximate variant if the corpus
     is too large for this to fit.
@@ -75,6 +80,7 @@ class ExactContentStats(ContentStatsBase):
 
     _seen_hashes: set[bytes] = field(default_factory=set, init=False, repr=False)
     _lengths: array = field(default_factory=lambda: array("q"), init=False, repr=False)
+    _sorted_lengths: list[int] | None = field(default=None, init=False, repr=False)
 
     def update(self, doc: Document) -> None:
         """Fold a single document into the running statistics.
@@ -104,6 +110,7 @@ class ExactContentStats(ContentStatsBase):
             self._seen_hashes.add(digest)
 
         self._lengths.append(length)
+        self._sorted_lengths = None
 
     def to_dict(self) -> dict[str, Any]:
         """Compute the final statistics report from the accumulated
@@ -158,7 +165,10 @@ class ExactContentStats(ContentStatsBase):
         else:
             std_dev = 0.0
 
-        sorted_lengths = sorted(self._lengths)
+        # Cached until the next ``update`` so repeated calls do not re-sort.
+        if self._sorted_lengths is None:
+            self._sorted_lengths = sorted(self._lengths)
+        sorted_lengths = self._sorted_lengths
 
         return {
             "count": n,
