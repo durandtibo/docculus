@@ -4,10 +4,11 @@ from __future__ import annotations
 
 __all__ = ["hash_document", "hash_documents"]
 
-import json
 from typing import TYPE_CHECKING
 
 from coola.hashing import hash_object, hash_string
+
+from docculus.hashing._canonical import canonical_document_string
 
 if TYPE_CHECKING:
     from langchain_core.documents import Document
@@ -41,8 +42,7 @@ def hash_document(doc: Document, length: int = 64) -> str:
 
         ```
     """
-    content = doc.page_content + json.dumps(doc.metadata, sort_keys=True)
-    return hash_string(content, length=length)
+    return hash_string(canonical_document_string(doc), length=length)
 
 
 def hash_documents(docs: list[Document], length: int = 64) -> str:

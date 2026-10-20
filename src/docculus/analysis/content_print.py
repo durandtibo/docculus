@@ -11,6 +11,7 @@ from coola.utils.imports import check_rich, is_rich_available
 if is_rich_available():  # pragma: no cover
     from rich import get_console
     from rich.console import Console, Group
+    from rich.markup import escape
     from rich.panel import Panel
     from rich.table import Table
     from rich.text import Text
@@ -54,7 +55,7 @@ def _format_value(value: Any) -> str:
         return f"{value:,.2f}"
     if isinstance(value, int):
         return f"{value:,}"
-    return str(value)
+    return escape(str(value))
 
 
 def _format_percentage_of_total(count: int, total: int) -> str:
@@ -229,8 +230,8 @@ def _build_doc_ids_grid(stats: dict[str, Any]) -> Table:
     doc_ids = Table.grid(padding=(0, 1))
     doc_ids.add_column(style="dim")
     doc_ids.add_column()
-    doc_ids.add_row("Shortest:", str(stats.get("min_doc_id", "")))
-    doc_ids.add_row("Longest:", str(stats.get("max_doc_id", "")))
+    doc_ids.add_row("Shortest:", escape(str(stats.get("min_doc_id", ""))))
+    doc_ids.add_row("Longest:", escape(str(stats.get("max_doc_id", ""))))
     return doc_ids
 
 

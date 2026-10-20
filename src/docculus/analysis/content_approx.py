@@ -138,7 +138,7 @@ class ApproxContentStats:
         if not doc.metadata:
             self.missing_metadata_count += 1
 
-        content_hash = hashlib.sha256(content.encode("utf-8", errors="ignore")).digest()
+        content_hash = hashlib.sha256(content.encode("utf-8", errors="surrogatepass")).digest()
         assert self._bloom is not None  # noqa: S101 (set in __post_init__)
         if self._bloom.add_and_check(content_hash):
             self.approx_duplicate_count += 1

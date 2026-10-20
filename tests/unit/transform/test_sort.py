@@ -145,3 +145,13 @@ def test_sort_by_metadata_reverse_missing_still_last() -> None:
     ]
     result = sort_by_metadata(docs, "source", reverse=True)
     assert result[-1].page_content == "X"
+
+
+def test_sort_by_metadata_reverse_keeps_missing_last() -> None:
+    docs = [
+        Document(page_content="C"),
+        Document(page_content="A", metadata={"k": 1}),
+        Document(page_content="B", metadata={"k": 2}),
+    ]
+    result = sort_by_metadata(docs, "k", reverse=True)
+    assert [d.page_content for d in result] == ["B", "A", "C"]

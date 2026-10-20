@@ -83,4 +83,19 @@ def test_find_duplicate_document_ids_non_str_content() -> None:
     doc_b = Document(id="b", page_content="", metadata={})
     doc_b.page_content = None
     docs = [doc_a, doc_b, Document(id="c", page_content="hello", metadata={})]
-    assert find_duplicate_document_ids(docs) == [["a", "b"]]
+    assert find_duplicate_document_ids(docs) == []
+
+
+def test_find_duplicate_document_ids_non_str_content_not_grouped_with_empty() -> None:
+    doc_a = Document(id="a", page_content="", metadata={})
+    doc_a.page_content = None
+    docs = [doc_a, Document(id="b", page_content="", metadata={})]
+    assert find_duplicate_document_ids(docs) == []
+
+
+def test_find_duplicate_document_ids_lone_surrogate_is_distinct() -> None:
+    docs = [
+        Document(id="a", page_content="ab", metadata={}),
+        Document(id="b", page_content="a\ud800b", metadata={}),
+    ]
+    assert find_duplicate_document_ids(docs) == []

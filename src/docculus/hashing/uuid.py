@@ -4,9 +4,10 @@ from __future__ import annotations
 
 __all__ = ["hash_document_to_uuid"]
 
-import json
 import uuid
 from typing import TYPE_CHECKING
+
+from docculus.hashing._canonical import canonical_document_string
 
 if TYPE_CHECKING:
     from langchain_core.documents import Document
@@ -49,5 +50,4 @@ def hash_document_to_uuid(doc: Document) -> str:
 
         ```
     """
-    content = doc.page_content + json.dumps(doc.metadata, sort_keys=True)
-    return str(uuid.uuid5(_NAMESPACE, content))
+    return str(uuid.uuid5(_NAMESPACE, canonical_document_string(doc)))

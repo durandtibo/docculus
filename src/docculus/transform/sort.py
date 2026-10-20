@@ -66,16 +66,8 @@ def sort_by_metadata(
 
         ```
     """
-    missing = object()
-
-    def sort_key(doc: Document) -> tuple:
-        value = doc.metadata.get(metadata_key, missing)
-        return (value is missing, value if value is not missing else None)
-
-    if not keep_missing:
-        docs = [doc for doc in docs if metadata_key in doc.metadata]
-        return sorted(docs, key=sort_key, reverse=reverse)
-
     present = [doc for doc in docs if metadata_key in doc.metadata]
-    missing = [doc for doc in docs if metadata_key not in doc.metadata]
-    return sorted(present, key=sort_key, reverse=reverse) + missing
+    result = sorted(present, key=lambda doc: doc.metadata[metadata_key], reverse=reverse)
+    if keep_missing:
+        result += [doc for doc in docs if metadata_key not in doc.metadata]
+    return result
