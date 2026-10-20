@@ -213,9 +213,17 @@ class BaseDocumentStore(ABC):
             yield from batch
 
     async def avalues(self, batch_size: int = 32) -> AsyncIterator[Document]:
-        """Async equivalent of :meth:`values`."""
+        """Async equivalent of :meth:`values`.
 
-        async for batch in self.aiter_batches(batch_size=batch_size):
+        Args:
+            batch_size: The number of documents fetched per batch.
+
+        Yields:
+            One :class:`~langchain_core.documents.Document` at a time,
+            in the same order as :meth:`aiter_batches`.
+        """
+        batches = self.aiter_batches(batch_size=batch_size)
+        async for batch in batches:
             for doc in batch:
                 yield doc
 
