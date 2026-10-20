@@ -1,0 +1,6 @@
+tasklib:
+  package:
+    name: docculus
+  groups:
+    install: dev,docs
+    update: dev,docs
