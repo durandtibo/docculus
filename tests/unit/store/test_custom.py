@@ -604,3 +604,12 @@ def test_typed_store_rejects_undeclared_metadata_key() -> None:
 def test_flat_store_rejects_reserved_metadata_key() -> None:
     with InMemoryDocumentStore() as store, pytest.raises(ValueError, match="reserved"):
         store.set_many([Document(id="1", page_content="x", metadata={"page_content": 1})])
+
+
+@persista_available
+def test_typed_duckdb_store_rejects_undeclared_metadata_key() -> None:
+    with (
+        TypedDuckDBDocumentStore(metadata_schema={"author": "TEXT"}) as store,
+        pytest.raises(ValueError, match="not declared in metadata_schema"),
+    ):
+        store.set_many([Document(id="1", page_content="x", metadata={"other": 1})])
