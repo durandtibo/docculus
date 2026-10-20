@@ -214,7 +214,6 @@ class BaseDocumentStore(ABC):
 
     async def avalues(self, batch_size: int = 32) -> AsyncIterator[Document]:
         """Async equivalent of :meth:`values`."""
-
         async for batch in self.aiter_batches(batch_size=batch_size):
             for doc in batch:
                 yield doc
