@@ -147,11 +147,18 @@ class ApproxContentStats:
         self.count += 1
         self.total_chars += length
 
+        self._update_extremes(length, doc_id)
+        self._update_reservoir(length)
+
+    def _update_extremes(self, length: int, doc_id: Any) -> None:
+        """Update the min/max character length and associated ids."""
         if self.min_chars is None or length < self.min_chars:
             self.min_chars, self.min_doc_id = length, doc_id
         if self.max_chars is None or length > self.max_chars:
             self.max_chars, self.max_doc_id = length, doc_id
 
+    def _update_reservoir(self, length: int) -> None:
+        """Add a length to the reservoir sample."""
         # Reservoir sampling (Algorithm R): keeps a uniform random sample
         # of up to `reservoir_size` lengths seen so far, in O(1) memory
         # relative to the total number of documents processed.
