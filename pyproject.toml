@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.31.0", "hatchling-autoextras-hook>=0.1.3"]
+requires = ["hatchling >= 1.32", "hatchling-autoextras-hook>=0.1.3"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
@@ -50,25 +50,25 @@ rich = ["rich>=14.0.0,<16.0"]
 
 [dependency-groups]
 dev = [
-  "black>=26.5.1",
   "coverage[toml]>=7.15.2,<8.0",
   "docformatter[tomli]>=1.7.8,<2.0",
-  "feu[all]>=0.7.3,<1.0",
+  "feu[all]>=0.8.4,<1.0",
+  "invoke-tasklib>=0.0.8,<1.0",
   "invoke>=3.0,<4.0",
-  "pre-commit >=4.6,<5.0",
-  "pygments >=2.20,<3.0",
-  "pyright >=1.1.409,<2.0",
-  "pytest >=9.0,<10.0",
-  "pytest-cov >=7.1,<8.0",
-  "pytest-timeout >=2.4,<3.0",
-  "ruff >=0.16,<1.0",
+  "pre-commit>=4.6,<5.0",
+  "pygments>=2.20,<3.0",
+  "pytest-cov>=7.1,<8.0",
+  "pytest-timeout>=2.4,<3.0",
+  "pytest>=9.1,<10.0",
+  "ruff>=0.16,<1.0",
+  "ty>=0.0.90,<1.0",
   "xdoctest >=1.3,<2.0",
 ]
 
 docs = [
   "mike >=2.2,<3.0",
   "mkdocs-material >=9.7,<10.0",
-  "mkdocstrings[python]>=1.0.6,<2.0",
+  "mkdocstrings[python]>=1.0,<2.0",
   "mkdocs-include-markdown-plugin >=7.3,<8.0",
 ]
 
@@ -82,6 +82,9 @@ Issues = "https://github.com/durandtibo/docculus/issues"
 [tool.uv.pip]
 torch-backend = "auto"
 
+[tool.codespell]
+skip = "*.lock,./.git,./htmlcov,./docs/site,coverage.xml"
+
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
 
@@ -91,9 +94,14 @@ source = ["docculus"]
 
 [tool.coverage.report]
 show_missing = true
-exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "^\\s*\\.\\.\\.$",
+  "\\)( -> .+)?: \\.\\.\\.$",
+]
 
-[tool.pytest]
+[tool.pytest.ini_options]
 minversion = "9.0"
 pythonpath = ["src"]
 testpaths = ["tests/"]
@@ -103,17 +111,6 @@ addopts = ["--color", "yes", "--durations", "10", "-rf"]
 anyio_mode = "auto"
 # Configuration of the short test summary info
 # https://docs.pytest.org/en/stable/usage.html#detailed-summary-report
-
-[tool.black]
-line-length = 100
-target-version = ["py310", "py311", "py312", "py313", "py314"]
-include = '\.pyi?$'
-
-[tool.pylint.FORMAT]
-max-line-length = 100
-
-[tool.isort]
-profile = "black"
 
 [tool.docformatter]
 recursive = true
@@ -130,6 +127,7 @@ lint.select = [
   "B",    # bugbear
   "BLE",  # flake8-blind-except
   "C4",   # flake8-comprehensions
+  "C90",  # mccabe complexity
   "D",    # pydocstyle
   "DTZ",  # flake8-datetimez
   "E",    # pycodestyle (Error)
@@ -138,6 +136,8 @@ lint.select = [
   "F",    # pyflakes
   "FA",   # flake8-future-annotations
   "FURB", # refurb
+  "G",    # flake8-logging-format
+  "I",    # isort
   "ICN",  # flake8-import-conventions
   "INP",  # flake8-no-pep420
   "ISC",  # flake8-implicit-str-concat
@@ -159,7 +159,7 @@ lint.select = [
   "S",    # flake8-bandit
   "SIM",  # flake8-simplify
   "T20",  # flake8-print
-  "TCH",  # flake8-type-checking
+  "TC",   # flake8-type-checking
   "TD",   # flake8-todos
   "TID",  # flake8-tidy-imports
   "TRY",  # tryceratops
@@ -169,7 +169,6 @@ lint.select = [
 lint.ignore = [
   "A003",    # Class attribute `{name}` is shadowing a python builtin
   "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed.
-  "B905",    # `zip()` without an explicit strict= parameter set. The `strict=` argument was added in Python 3.10
   "E501",    # Line lengths are recommended to be no greater than 79 characters.
   "W505",    # Doc line too long
   "PLR0913", # Too many arguments in function definition (8 > 5)
@@ -191,6 +190,7 @@ lint.fixable = [
   "B",    # bugbear
   "BLE",  # flake8-blind-except
   "C4",   # flake8-comprehensions
+  "C90",  # mccabe complexity
   "D",    # pydocstyle
   "DTZ",  # flake8-datetimez
   "E",    # pycodestyle (Error)
@@ -199,6 +199,8 @@ lint.fixable = [
   "F",    # pyflakes
   "FA",   # flake8-future-annotations
   "FURB", # refurb
+  "G",    # flake8-logging-format
+  "I",    # isort
   "ICN",  # flake8-import-conventions
   "INP",  # flake8-no-pep420
   "ISC",  # flake8-implicit-str-concat
@@ -220,7 +222,7 @@ lint.fixable = [
   "S",    # flake8-bandit
   "SIM",  # flake8-simplify
   "T20",  # flake8-print
-  "TCH",  # flake8-type-checking
+  "TC",   # flake8-type-checking
   "TD",   # flake8-todos
   "TID",  # flake8-tidy-imports
   "TRY",  # tryceratops
@@ -263,7 +265,7 @@ src = ["src"]
 "tests/**" = [
   "D",    # pydocstyle
   "PL",   # Pylint
-  "S101", # flake8-bandit
+  "S101", # flake8-bandit: assert
 ]
 
 [tool.ruff.lint.mccabe]
@@ -276,16 +278,17 @@ convention = "google"
 max-doc-length = 72
 
 [tool.ruff.lint.isort]
-force-sort-within-sections = true
+force-sort-within-sections = false
 combine-as-imports = true
-known-first-party = ["src"]
+known-first-party = ["docculus"]
 
 [tool.ruff.lint.flake8-import-conventions]
 [tool.ruff.lint.flake8-import-conventions.aliases]
 numpy = "np"
+pandas = "pd"
 polars = "pl"
+pyarrow = "pa"
+xarray = "xr"
 
-[tool.pyright]
+[tool.ty.src]
 include = ["src"]
-venvPath = "."
-venv = ".venv"
