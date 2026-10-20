@@ -6,6 +6,7 @@ from __future__ import annotations
 __all__ = ["ContentStatsBase", "content_hash", "nearest_rank_percentile"]
 
 import hashlib
+import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -16,25 +17,30 @@ if TYPE_CHECKING:
 
 
 def content_hash(content: str) -> bytes:
-    r"""Compute the SHA-256 digest of ``content``.
+    r"""Compute a 16-byte BLAKE2b digest of ``content``.
 
     Lone surrogates are preserved (``surrogatepass``), so distinct
-    strings never share an encoding.
+    strings never share an encoding. 128 bits is ample to make
+    accidental collisions negligible while halving the memory used to
+    track seen contents.
 
     Args:
         content: The text to hash.
 
     Returns:
-        The 32-byte digest.
+        The 16-byte digest.
     """
-    return hashlib.sha256(content.encode("utf-8", errors="surrogatepass")).digest()
+    return hashlib.blake2b(content.encode("utf-8", errors="surrogatepass"), digest_size=16).digest()
 
 
 def nearest_rank_percentile(sorted_values: list[int], p: float) -> float | None:
     r"""Compute a percentile from a pre-sorted list.
 
-    Uses nearest-rank interpolation: the index into ``sorted_values``
-    is ``round(p / 100 * (n - 1))``.
+    Uses the nearest-rank method: the index into ``sorted_values`` is
+    ``p / 100 * (n - 1)`` rounded half up (not Python's banker's
+    rounding, so the result does not depend on the parity of the
+    index). This returns an element of the data and differs from the
+    linear interpolation used by ``numpy.percentile``.
 
     Args:
         sorted_values: Values sorted in ascending order.
@@ -46,7 +52,7 @@ def nearest_rank_percentile(sorted_values: list[int], p: float) -> float | None:
     """
     if not sorted_values:
         return None
-    return sorted_values[round(p / 100 * (len(sorted_values) - 1))]
+    return sorted_values[math.floor(p / 100 * (len(sorted_values) - 1) + 0.5)]
 
 
 @dataclass(slots=True)

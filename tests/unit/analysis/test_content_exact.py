@@ -205,7 +205,7 @@ def test_compute_content_stats_exact_percentiles_one_to_ten() -> None:
         "max_chars": 10,
         "min_doc_id": "1",
         "max_doc_id": "10",
-        "p50_chars": 5,
+        "p50_chars": 6,
         "p90_chars": 9,
         "p99_chars": 10,
         "empty_count": 0,
@@ -425,7 +425,7 @@ def test_compute_content_stats_exact_generator_input() -> None:
         "max_chars": 4,
         "min_doc_id": "2",
         "max_doc_id": "1",
-        "p50_chars": 2,
+        "p50_chars": 4,
         "p90_chars": 4,
         "p99_chars": 4,
         "empty_count": 0,
@@ -511,7 +511,7 @@ def test_exact_content_stats_manual_update_calls() -> None:
         "max_chars": 4,
         "min_doc_id": "1",
         "max_doc_id": "2",
-        "p50_chars": 2,
+        "p50_chars": 4,
         "p90_chars": 4,
         "p99_chars": 4,
         "empty_count": 0,
@@ -529,3 +529,20 @@ def test_exact_content_stats_to_dict_is_idempotent() -> None:
     stats = ExactContentStats()
     stats.update(Document(id="1", page_content="abc", metadata={"source": "x"}))
     assert stats.to_dict() == stats.to_dict()
+
+
+def test_exact_content_stats_to_dict_cache_invalidated_by_update() -> None:
+    stats = ExactContentStats()
+    stats.update(Document(id="a", page_content="x" * 10))
+    assert stats.to_dict()["p99_chars"] == 10
+    assert stats.to_dict()["p99_chars"] == 10  # served from the cached sort
+    stats.update(Document(id="b", page_content="x" * 20))
+    assert stats.to_dict()["p99_chars"] == 20
+
+
+def test_exact_content_stats_percentile_rounds_half_up() -> None:
+    # p50 of 4 values -> index 1.5, which must round up (not to the even index 2 or 1).
+    stats = ExactContentStats()
+    for n in (1, 2, 3, 4):
+        stats.update(Document(id=str(n), page_content="x" * n))
+    assert stats.to_dict()["p50_chars"] == 3

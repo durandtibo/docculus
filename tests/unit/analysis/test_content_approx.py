@@ -187,7 +187,7 @@ def test_compute_content_stats_approx_percentiles_one_to_ten() -> None:
     ]
     result = compute_content_stats_approx(docs, reservoir_size=FULL_RESERVOIR)
     assert result["std_dev_chars"] == pytest.approx(2.8722813232690143)
-    assert result["p50_chars_approx"] == 5
+    assert result["p50_chars_approx"] == 6
     assert result["p90_chars_approx"] == 9
     assert result["p99_chars_approx"] == 10
 
@@ -300,7 +300,7 @@ def test_compute_content_stats_approx_generator_input() -> None:
     assert result["count"] == 2
     assert result["total_chars"] == 6
     assert result["std_dev_chars"] == pytest.approx(1.0)
-    assert result["p50_chars_approx"] == 2
+    assert result["p50_chars_approx"] == 4
     assert result["p90_chars_approx"] == 4
 
 
@@ -397,7 +397,7 @@ def test_approx_content_stats_manual_update_calls() -> None:
         "max_chars": 4,
         "min_doc_id": "1",
         "max_doc_id": "2",
-        "p50_chars_approx": 2,
+        "p50_chars_approx": 4,
         "p90_chars_approx": 4,
         "p99_chars_approx": 4,
         "empty_count": 0,
