@@ -81,11 +81,8 @@ actually any good. `docculus` provides small, composable building blocks for eac
 >>> from docculus.store import InMemoryDocumentStore
 >>> from langchain_core.documents import Document
 >>> with InMemoryDocumentStore() as store:  # doctest: +SKIP
-...     store.set_many(
-...         [Document(id="1", page_content="hello", metadata={"author": "Alice"})]
-...     )
+...     store.set_many([Document(id="1", page_content="hello", metadata={"author": "Alice"})])
 ...     store.get("1")
-...
 Document(id='1', page_content='hello', metadata={'author': 'Alice'})
 
 ```
