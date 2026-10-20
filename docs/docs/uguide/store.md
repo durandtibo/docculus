@@ -51,12 +51,9 @@ It requires no setup and is a good default for tests and prototyping:
 >>> from docculus.store import InMemoryDocumentStore
 >>> from langchain_core.documents import Document
 >>> with InMemoryDocumentStore() as store:  # doctest: +SKIP
-...     store.set_many(
-...         [Document(id="1", page_content="hello", metadata={"author": "Alice"})]
-...     )
+...     store.set_many([Document(id="1", page_content="hello", metadata={"author": "Alice"})])
 ...     print(store.count())
 ...     print(store.get("1"))
-...
 1
 Document(id='1', page_content='hello', metadata={'author': 'Alice'})
 
@@ -81,20 +78,13 @@ are combined with `AND`):
 >>> with InMemoryDocumentStore() as store:  # doctest: +SKIP
 ...     store.set_many(
 ...         [
-...             Document(
-...                 id="1", page_content="Intro to Python", metadata={"author": "Alice"}
-...             ),
-...             Document(
-...                 id="2", page_content="Advanced Python", metadata={"author": "Alice"}
-...             ),
-...             Document(
-...                 id="3", page_content="History of Rome", metadata={"author": "Bob"}
-...             ),
+...             Document(id="1", page_content="Intro to Python", metadata={"author": "Alice"}),
+...             Document(id="2", page_content="Advanced Python", metadata={"author": "Alice"}),
+...             Document(id="3", page_content="History of Rome", metadata={"author": "Bob"}),
 ...         ]
 ...     )
 ...     print(len(store.filter(author="Alice")))
 ...     print(len(store.filter()))
-...
 2
 3
 
@@ -106,14 +96,11 @@ are combined with `AND`):
 >>> from docculus.store import InMemoryDocumentStore
 >>> from langchain_core.documents import Document
 >>> with InMemoryDocumentStore() as store:  # doctest: +SKIP
-...     store.set_many(
-...         [Document(id="1", page_content="a"), Document(id="2", page_content="b")]
-...     )
+...     store.set_many([Document(id="1", page_content="a"), Document(id="2", page_content="b")])
 ...     store.delete("1")
 ...     print(store.count())
 ...     store.clear()
 ...     print(store.count())
-...
 1
 0
 
@@ -131,11 +118,8 @@ and with `":memory:"`:
 >>> from docculus.store import SQLiteDocumentStore
 >>> from langchain_core.documents import Document
 >>> with SQLiteDocumentStore() as store:  # doctest: +SKIP
-...     store.set_many(
-...         [Document(id="1", page_content="Intro to Python", metadata={"author": "Alice"})]
-...     )
+...     store.set_many([Document(id="1", page_content="Intro to Python", metadata={"author": "Alice"})])
 ...     print(store.get("1"))
-...
 Document(id='1', page_content='Intro to Python', metadata={'author': 'Alice'})
 
 ```
@@ -175,11 +159,8 @@ individual fields should be queryable as SQL columns:
 >>> from langchain_core.documents import Document
 >>> schema = {"author": "TEXT", "year": "INTEGER"}
 >>> with TypedSQLiteDocumentStore(metadata_schema=schema) as store:  # doctest: +SKIP
-...     store.set_many(
-...         [Document(id="1", page_content="Intro to Python", metadata={"author": "Alice"})]
-...     )
+...     store.set_many([Document(id="1", page_content="Intro to Python", metadata={"author": "Alice"})])
 ...     print(len(store.filter(author="Alice")))
-...
 1
 
 ```
@@ -227,7 +208,6 @@ separate async class.
 ...         await store.aset_many([Document(id="1", page_content="hello")])
 ...         print(await store.acount())
 ...         print(await store.aget("1"))
-...
 >>> asyncio.run(main())  # doctest: +SKIP
 1
 Document(id='1', page_content='hello', metadata={})
@@ -245,11 +225,8 @@ the input, without fetching the documents themselves:
 >>> from docculus.store import InMemoryDocumentStore
 >>> from langchain_core.documents import Document
 >>> with InMemoryDocumentStore() as store:  # doctest: +SKIP
-...     store.set_many(
-...         [Document(id="1", page_content="a"), Document(id="2", page_content="b")]
-...     )
+...     store.set_many([Document(id="1", page_content="a"), Document(id="2", page_content="b")])
 ...     print(store.contains_many(["1", "2", "3"]))
-...
 [True, True, False]
 
 ```
@@ -268,7 +245,6 @@ backend in chunks of `batch_size`:
 ...     print(sorted(store.keys()))
 ...     for batch in store.iter_batches(batch_size=2):
 ...         print(len(batch))
-...
 ['0', '1', '2', '3', '4']
 2
 2

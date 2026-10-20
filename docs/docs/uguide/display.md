@@ -54,9 +54,7 @@ default). Documents with no metadata show a dimmed placeholder:
 from langchain_core.documents import Document
 from docculus.display import print_documents_metadata
 
-docs = [
-    Document(id="1", page_content="hello", metadata={"author": "Alice", "year": 2020})
-]
+docs = [Document(id="1", page_content="hello", metadata={"author": "Alice", "year": 2020})]
 print_documents_metadata(docs, separator=" | ")
 ```
 

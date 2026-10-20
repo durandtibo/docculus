@@ -61,7 +61,6 @@ found:
 ...     validate_document_consistency(docs, raise_error=True)
 ... except DocumentConsistencyError as e:
 ...     print("inconsistent")
-...
 inconsistent
 
 ```
