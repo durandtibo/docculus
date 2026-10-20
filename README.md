@@ -222,7 +222,7 @@ pip install docculus[all]
 
 ### Requirements
 
-- **Python**: 3.10 or higher
+- **Python**: 3.11 or higher
 - **Core dependencies**: [`coola`](https://github.com/durandtibo/coola),
   [`langchain-core`](https://python.langchain.com/api_reference/core/index.html)
 - **Optional dependencies** (install with `docculus[all]`):
@@ -235,8 +235,8 @@ pip install docculus[all]
 
 | `coola` | `coola`         | `langchain-core` | `duckdb`<sup>*</sup> | `faker`<sup>*</sup> | `persista`<sup>*</sup> | `rich`<sup>*</sup> | `python` |
 | ------- | --------------- | ---------------- | -------------------- | ------------------- | ---------------------- | ------------------ | -------- |
-| `main`  | `>=1.1.10,<1.0` | `>=1.4,<2.0`     | `>=1.3,<2.0`         | `>=40.0,<41.0`      | `>=0.0.3,<1.0`         | `>=14.0.0,<16.0`   | `>=3.10` |
-| `0.0.1` | `>=1.1.10,<1.0` | `>=1.4,<2.0`     | `>=1.3,<2.0`         | `>=40.0,<41.0`      | `>=0.0.3,<1.0`         | `>=14.0.0,<16.0`   | `>=3.10` |
+| `main`  | `>=1.1.10,<1.0` | `>=1.4,<2.0`     | `>=1.3,<2.0`         | `>=40.0,<41.0`      | `>=0.0.3,<1.0`         | `>=14.0.0,<16.0`   | `>=3.11` |
+| `0.0.1` | `>=1.1.10,<1.0` | `>=1.4,<2.0`     | `>=1.3,<2.0`         | `>=40.0,<41.0`      | `>=0.0.3,<1.0`         | `>=14.0.0,<16.0`   | `>=3.11` |
 
 <sup>*</sup> indicates an optional dependency
 

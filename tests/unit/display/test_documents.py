@@ -78,7 +78,7 @@ def test_print_documents_passes_compact_metadata() -> None:
 
 @rich_available
 def test_print_documents_consumes_generator() -> None:
-    def gen() -> Generator[Document, None, None]:
+    def gen() -> Generator[Document]:
         yield _make_doc(id_="1")
         yield _make_doc(id_="2")
 
